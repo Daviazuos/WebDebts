@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\MicroServices.WebDebts.Application\MicroServices.WebDebts.Application.csproj" />
     <ProjectReference Include="..\MicroServices.WebDebts.Domain\MicroServices.WebDebts.Domain.csproj" />
+    <ProjectReference Include="..\MicroServices.WebDebts.Infrastructure\MicroServices.WebDebts.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

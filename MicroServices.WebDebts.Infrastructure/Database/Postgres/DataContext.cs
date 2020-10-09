@@ -1,7 +1,7 @@
 ﻿using MicroServices.WebDebts.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace MicroServices.WebDebts.Infrastructure.Database.Postgres
+namespace MicroServices.WebDebts.Infrastructure.Database
 {
     public class DataContext : DbContext
     {
