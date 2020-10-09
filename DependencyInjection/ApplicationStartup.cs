@@ -1,5 +1,7 @@
 ﻿using MicroServices.WebDebts.Application.Services;
+using MicroServices.WebDebts.Domain.Interfaces;
 using MicroServices.WebDebts.Domain.Services;
+using MicroServices.WebDebts.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -19,6 +21,7 @@ namespace MicroServices.WebDebts.DependencyInjection
         public static void RegisterApplication(IServiceCollection services)
         {
             services.AddScoped<IDebtsApplicationService, DebtsApplicationService>();
+            services.AddScoped<IDebtsRepository, BaseRepository>();
         }
 
         public static void RegisterDomain(IServiceCollection services)

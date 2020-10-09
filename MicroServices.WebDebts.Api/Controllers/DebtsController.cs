@@ -24,9 +24,18 @@ namespace MicroServices.WebDebts.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<bool>> CreateSimpleAsync([FromBody] CreateDebtsRequest createDebtsRequest)
         {
-            ; var debt = await _debtsApplicationService.CreateSimpleDebt(createDebtsRequest);
+            var debt = await _debtsApplicationService.CreateSimpleDebt(createDebtsRequest);
 
             return new OkObjectResult(debt);
+        }
+
+        [HttpGet, Route("GetSimple")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<bool>> GetSimpleAsync()
+        {
+            return new OkObjectResult(true);
         }
     }
 }

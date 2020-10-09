@@ -1,19 +1,26 @@
-﻿using MicroServices.WebDebts.Domain.Models;
-using System;
+﻿using MicroServices.WebDebts.Domain.Interfaces;
+using MicroServices.WebDebts.Domain.Models;
 using System.Threading.Tasks;
 
 namespace MicroServices.WebDebts.Domain.Services
 {
     public interface IDebtsService
     {
-        Task<bool> CreateDebt(Debt debt);
+        Task CreateDebt(Debt debt);
     }
 
     public class DebtsService : IDebtsService
     {
-        public Task<bool> CreateDebt(Debt debt)
+        private readonly IDebtsRepository _debtRepository;
+
+        public DebtsService(IDebtsRepository debtRepository)
         {
-            throw new NotImplementedException();
+            _debtRepository = debtRepository;
+        }
+
+        public async Task CreateDebt(Debt debt)
+        {
+            await _debtRepository.AddAsync(debt);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using MicroServices.WebDebts.Domain.Interfaces;
+using MicroServices.WebDebts.Infrastructure.Database.Postgres;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;

@@ -1,7 +1,7 @@
 ﻿using MicroServices.WebDebts.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace MicroServices.WebDebts.Infrastructure.Database
+namespace MicroServices.WebDebts.Infrastructure.Database.Postgres
 {
     public class DataContext : DbContext
     {
@@ -14,7 +14,7 @@ namespace MicroServices.WebDebts.Infrastructure.Database
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
+            Mapping.MapDebt(modelBuilder);
         }
     }
 }
