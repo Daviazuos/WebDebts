@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using MicroServices.WebDebts.Application.Models;
+using MicroServices.WebDebts.Application.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System.Net.Mime;
 using System.Threading.Tasks;
 
 namespace MicroServices.WebDebts.Api.Controllers
@@ -10,5 +11,22 @@ namespace MicroServices.WebDebts.Api.Controllers
     [ApiController]
     public class DebtsController : ControllerBase
     {
+        private readonly IDebtsApplicationService _debtsApplicationService;
+
+        public DebtsController(IDebtsApplicationService debtsApplicationService)
+        {
+            _debtsApplicationService = debtsApplicationService;
+        }
+
+        [HttpPost, Route("CreateSimple")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<bool>> CreateSimpleAsync([FromBody] CreateDebtsRequest createDebtsRequest)
+        {
+            var debt = await _debtsApplicationService.CreateSimpleDebt(createDebtsRequest);
+
+            return new OkObjectResult(debt);
+        }
     }
 }
