@@ -1,10 +1,10 @@
-﻿using MicroServices.WebDebts.Domain.Enum;
+﻿using MicroServices.WebDebts.Domain.Models.Enum;
 using System;
 using System.Collections.Generic;
 
 namespace MicroServices.WebDebts.Domain.Models
 {
-    public class Debt : BaseModel
+    public class Debt : BaseDebt
     {
         public string Name { get; set; }
         public decimal Value { get; set; }
