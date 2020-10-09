@@ -1,6 +1,6 @@
 ﻿using MicroServices.WebDebts.Application.Models;
-using MicroServices.WebDebts.Domain.Enum;
 using MicroServices.WebDebts.Domain.Models;
+using MicroServices.WebDebts.Domain.Models.Enum;
 using MicroServices.WebDebts.Domain.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;

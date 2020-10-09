@@ -1,9 +1,8 @@
-﻿using MicroServices.WebDebts.Domain.Interfaces;
+﻿using MicroServices.WebDebts.Domain.Interfaces.Repository;
 using MicroServices.WebDebts.Infrastructure.Database.Postgres;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace MicroServices.WebDebts.Infrastructure.Repositories

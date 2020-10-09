@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -9,7 +9,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WebDebts\MicroServices.WebDebts.Domain.csproj" />
+    <Reference Include="MicroServices.WebDebts.Domain">
+      <HintPath>..\MicroServices.WebDebts.Domain\bin\Debug\netstandard2.0\MicroServices.WebDebts.Domain.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

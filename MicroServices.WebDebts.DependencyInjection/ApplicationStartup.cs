@@ -1,10 +1,7 @@
 ﻿using MicroServices.WebDebts.Application.Services;
 using MicroServices.WebDebts.Domain.Services;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
 
 namespace MicroServices.WebDebts.DependencyInjection
 {
