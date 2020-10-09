@@ -24,7 +24,7 @@ namespace MicroServices.WebDebts.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<bool>> CreateSimpleAsync([FromBody] CreateDebtsRequest createDebtsRequest)
         {
-            var debt = await _debtsApplicationService.CreateSimpleDebt(createDebtsRequest);
+            ; var debt = await _debtsApplicationService.CreateSimpleDebt(createDebtsRequest);
 
             return new OkObjectResult(debt);
         }

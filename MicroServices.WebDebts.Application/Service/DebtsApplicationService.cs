@@ -31,12 +31,26 @@ namespace MicroServices.WebDebts.Application.Services
             return true;
         }
 
-        public static IEnumerable<Installments> CreateInstallments(CreateDebtsRequest createDebtsRequest)
+        public static List<Installments> CreateInstallments(CreateDebtsRequest debts)
         {
-            for (int i = 0; i < createDebtsRequest.NumberOfInstallments; i++)
-            {
+            var installmentsList = new List<Installments>();
+            var installmentValue = debts.Value / debts.NumberOfInstallments;
 
+            for (int i = 1; i < debts.NumberOfInstallments; i++)
+            {
+                var installment = new Installments
+                {
+                    InstallmentNumber = i,
+                    Date = debts.Date.AddMonths(i),
+                    Status = Status.NotPaid,
+                    PaymentDate = null,
+                    Value = installmentValue
+                };
+
+                installmentsList.Add(installment);
             }
+
+            return installmentsList;
         }
     }
 }
