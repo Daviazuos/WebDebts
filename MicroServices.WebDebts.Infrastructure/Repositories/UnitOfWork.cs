@@ -1,4 +1,4 @@
-﻿using MicroServices.WebDebts.Domain.Interfaces;
+﻿using MicroServices.WebDebts.Domain.Interfaces.Repository;
 using MicroServices.WebDebts.Infrastructure.Database.Postgres;
 using System;
 using System.Threading.Tasks;

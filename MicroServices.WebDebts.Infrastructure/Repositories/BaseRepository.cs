@@ -1,4 +1,5 @@
 ﻿using MicroServices.WebDebts.Domain.Interfaces.Repository;
+using MicroServices.WebDebts.Infrastructure.Database;
 using MicroServices.WebDebts.Infrastructure.Database.Postgres;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -10,15 +11,17 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
     public class BaseRepository<T> : IBaseRepository<T> where T : class
     {
         private DbSet<T> _dbSet;
+        private DataContext _context;
 
         public BaseRepository(DataContext context)
         {
             _dbSet = context.Set<T>();
+            _context = context;
         }
 
-        public Task AddAsync(T model)
+        public async Task AddAsync(T model)
         {
-            throw new NotImplementedException();
+            await _context.AddAsync(model);
         }
 
         public Task AddManyAsync(IEnumerable<T> model)
