@@ -2,6 +2,8 @@ dotnet ef --startup-project ../MicroServices.WebDebts.Api migrations add init --
 
 dotnet ef --startup-project ../MicroServices.WebDebts.Api database update --context DataContext
 
+
+Payload 
 {
   "name": "tv",
   "value": 2000.00,
