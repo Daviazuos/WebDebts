@@ -12,10 +12,16 @@
         Closed = 1
     }
 
-    public enum DebtType
+    public enum DebtInstallmentType
     {
         Installment = 0,
         Fixed = 1,
         Simple = 2
+    }
+
+    public enum DebtType
+    {
+        Simple = 0,
+        Card = 1
     }
 }

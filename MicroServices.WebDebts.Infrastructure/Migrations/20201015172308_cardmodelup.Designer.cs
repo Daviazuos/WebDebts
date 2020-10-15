@@ -3,15 +3,17 @@ using System;
 using MicroServices.WebDebts.Infrastructure.Database.Postgres;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace MicroServices.WebDebts.Infrastructure.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20201015172308_cardmodelup")]
+    partial class cardmodelup
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -19,36 +21,10 @@ namespace MicroServices.WebDebts.Infrastructure.Migrations
                 .HasAnnotation("ProductVersion", "3.1.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            modelBuilder.Entity("MicroServices.WebDebts.Domain.Models.Card", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("ClosureDate")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<int>("DueDate")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Card");
-                });
-
             modelBuilder.Entity("MicroServices.WebDebts.Domain.Models.Debt", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("CardId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -73,8 +49,6 @@ namespace MicroServices.WebDebts.Infrastructure.Migrations
                         .HasColumnType("numeric");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CardId");
 
                     b.ToTable("Debt");
                 });
@@ -111,13 +85,6 @@ namespace MicroServices.WebDebts.Infrastructure.Migrations
                     b.HasIndex("DebtId");
 
                     b.ToTable("Installments");
-                });
-
-            modelBuilder.Entity("MicroServices.WebDebts.Domain.Models.Debt", b =>
-                {
-                    b.HasOne("MicroServices.WebDebts.Domain.Models.Card", null)
-                        .WithMany("DebtValues")
-                        .HasForeignKey("CardId");
                 });
 
             modelBuilder.Entity("MicroServices.WebDebts.Domain.Models.Installments", b =>

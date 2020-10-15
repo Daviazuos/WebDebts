@@ -22,5 +22,10 @@ namespace MicroServices.WebDebts.Application.Models.Mappers
         {
             return Mapper.Map<Debt>(model);
         }
+
+        public static GetDebtByIdResponse ToResponseModel(this Debt entity)
+        {
+            return Mapper.Map<GetDebtByIdResponse>(entity);
+        }
     }
 }

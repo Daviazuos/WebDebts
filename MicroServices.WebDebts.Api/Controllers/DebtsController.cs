@@ -2,6 +2,7 @@
 using MicroServices.WebDebts.Application.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Net.Mime;
 using System.Threading.Tasks;
 
@@ -18,24 +19,37 @@ namespace MicroServices.WebDebts.Api.Controllers
             _debtsApplicationService = debtsApplicationService;
         }
 
-        [HttpPost, Route("CreateSimple")]
+        [HttpPost, Route("Create")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<bool>> CreateSimpleAsync([FromBody] DebtsAppModel createDebtsRequest)
+        public async Task<ActionResult<Guid>> CreateSimpleAsync([FromBody] DebtsAppModel createDebtsRequest)
         {
-            var debt = await _debtsApplicationService.CreateSimpleDebt(createDebtsRequest);
+            var debt = await _debtsApplicationService.CreateDebt(createDebtsRequest);
 
             return new OkObjectResult(debt);
         }
 
-        [HttpGet, Route("GetSimple")]
+        [HttpGet, Route("GeSimpletById")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<bool>> GetSimpleAsync()
+        public async Task<ActionResult<GetDebtByIdResponse>> GetByIdAsync([FromQuery] GetDebtByIdRequest getDebtByIdRequest)
         {
-            return new OkObjectResult(true);
+            var debt = await _debtsApplicationService.GetDebtsById(getDebtByIdRequest.Id);
+
+            return new OkObjectResult(debt); 
+        }
+
+        [HttpDelete, Route("Delete")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult> DeleteAsync([FromQuery] DeleteDebtByIdRequest deletePersonRequest)
+        {
+            await _debtsApplicationService.DeletePerson(deletePersonRequest);
+
+            return NoContent();
         }
     }
 }

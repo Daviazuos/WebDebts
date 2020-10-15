@@ -1,11 +1,13 @@
-﻿using MicroServices.WebDebts.Application.Services;
+﻿using MicroServices.WebDebts.Application.Service;
+using MicroServices.WebDebts.Application.Services;
 using MicroServices.WebDebts.Domain.Interfaces.Repository;
+using MicroServices.WebDebts.Domain.Service;
 using MicroServices.WebDebts.Domain.Services;
 using MicroServices.WebDebts.Infrastructure.Database.Postgres;
 using MicroServices.WebDebts.Infrastructure.Repositories;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MicroServices.WebDebts.DependencyInjection
 {
@@ -24,16 +26,19 @@ namespace MicroServices.WebDebts.DependencyInjection
         public static void RegisterApplication(IServiceCollection services)
         {
             services.AddScoped<IDebtsApplicationService, DebtsApplicationService>();
+            services.AddScoped<ICardsApplicationService, CardsApplicationService>();
         }
 
         public static void RegisterDomain(IServiceCollection services)
         {
             services.AddScoped<IDebtsService, DebtsService>();
+            services.AddScoped<ICardService, CardService>();
         }
 
         public static void RegisterInfrastructure(IServiceCollection services)
         {
             services.AddScoped<IDebtRepository, DebtRepository>();
+            services.AddScoped<ICardRepository, CardRepository>();
         }
     }
 }
