@@ -10,6 +10,10 @@ namespace MicroServices.WebDebts.Application.Models.Mappers
             this.CreateMap<Card, CardAppModel>()
                 .IgnoreAllSourcePropertiesWithAnInaccessibleSetter()
                 .ReverseMap();
+
+            this.CreateMap<Card, GetCardByIdResponse>()
+               .IgnoreAllSourcePropertiesWithAnInaccessibleSetter()
+               .ReverseMap();
         }
     }
 }

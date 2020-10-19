@@ -9,7 +9,9 @@ namespace MicroServices.WebDebts.Application.Models
         public string Name { get; set; }
         public decimal Value { get; set; }
         public int NumberOfInstallments { get; set; }
-        public DebtInstallmentType DebtType { get; set; }
+        // remover enum de domain daqui 
+        public DebtType DebtType { get; set; }
+        public DebtInstallmentType DebtInstallmentType { get; set; }
         public List<Installments> Installments { get; set; }
     }
 }

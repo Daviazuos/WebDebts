@@ -9,6 +9,7 @@ namespace MicroServices.WebDebts.Domain.Service
     {
         public List<Installments> CreateInstallmentsMethod(Debt debt)
         {
+            // todo ver factory e strategy
             var installments = new List<Installments>();
 
             if (debt.DebtInstallmentType == DebtInstallmentType.Fixed)

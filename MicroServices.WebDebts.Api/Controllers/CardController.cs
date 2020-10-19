@@ -42,5 +42,16 @@ namespace MicroServices.WebDebts.Api.Controllers
 
             return new OkObjectResult(cardId);
         }
+
+        [HttpGet, Route("GetCardById")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<GetDebtByIdResponse>> GetByIdAsync([FromQuery] GetDebtByIdRequest getDebtByIdRequest)
+        {
+            var card = await _cardsApplicationService.GetCardById(getDebtByIdRequest.Id);
+
+            return new OkObjectResult(card);
+        }
     }
 }

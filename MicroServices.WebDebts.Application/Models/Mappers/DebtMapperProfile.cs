@@ -11,7 +11,7 @@ namespace MicroServices.WebDebts.Application.Models.Mappers
                 .ForMember(x => x.Name, opts => opts.MapFrom(x => x.Name))
                 .ForMember(x => x.Value, opts => opts.MapFrom(x => x.Value))
                 .ForMember(x => x.NumberOfInstallments, opts => opts.MapFrom(x => x.NumberOfInstallments))
-                .ForMember(x => x.DebtType, opts => opts.MapFrom(x => x.DebtInstallmentType))
+                .ForMember(x => x.DebtInstallmentType, opts => opts.MapFrom(x => x.DebtInstallmentType))
                 .IgnoreAllSourcePropertiesWithAnInaccessibleSetter()
                 .ReverseMap();
 
@@ -19,8 +19,9 @@ namespace MicroServices.WebDebts.Application.Models.Mappers
                 .ForMember(x => x.Name, opts => opts.MapFrom(x => x.Name))
                 .ForMember(x => x.Value, opts => opts.MapFrom(x => x.Value))
                 .ForMember(x => x.NumberOfInstallments, opts => opts.MapFrom(x => x.NumberOfInstallments))
-                .ForMember(x => x.DebtType, opts => opts.MapFrom(x => x.DebtInstallmentType))
+                .ForMember(x => x.DebtInstallmentType, opts => opts.MapFrom(x => x.DebtInstallmentType))
                 .ForMember(x => x.Installments, opts => opts.MapFrom(x =>x.Installments))
+                .ForMember(x => x.DebtType, opts => opts.MapFrom(x =>x.DebtType))
                 .IgnoreAllSourcePropertiesWithAnInaccessibleSetter()
                 .ReverseMap();
         }

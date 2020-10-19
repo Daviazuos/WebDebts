@@ -1,9 +1,12 @@
-﻿using MicroServices.WebDebts.Domain.Interfaces.Repository;
+﻿using MicroServices.WebDebts.Domain.Common;
+using MicroServices.WebDebts.Domain.Interfaces.Repository;
 using MicroServices.WebDebts.Domain.Models;
 using MicroServices.WebDebts.Domain.Models.Enum;
 using MicroServices.WebDebts.Domain.Service;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using static MicroServices.WebDebts.Domain.Service.InstallmentsStrategy;
 
 namespace MicroServices.WebDebts.Domain.Services
 {
@@ -25,9 +28,18 @@ namespace MicroServices.WebDebts.Domain.Services
 
         public async Task CreateDebtAsync(Debt debt, DebtType debtType)
         {
-            var classInstallments = new CreateDebtsInstallments();
-            
-            var installments = classInstallments.CreateInstallmentsMethod(debt);
+            var classInstallments = new InstallmentsContext();
+
+            // ver forma de fazer isso melhor
+
+            if (debt.DebtInstallmentType == DebtInstallmentType.Simple)
+                classInstallments.SetStrategy(new CreateSimpleInstallments());
+            else if (debt.DebtInstallmentType == DebtInstallmentType.Fixed)
+                classInstallments.SetStrategy(new CreateFixedInstallments());
+            else if (debt.DebtInstallmentType == DebtInstallmentType.Installment)
+                classInstallments.SetStrategy(new CreateInstallments());
+
+            var installments = classInstallments.CreateInstallments(debt);
 
             debt.Installments = installments;
             debt.Id = Guid.NewGuid();

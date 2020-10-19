@@ -30,7 +30,7 @@ namespace MicroServices.WebDebts.Api.Controllers
             return new OkObjectResult(debt);
         }
 
-        [HttpGet, Route("GeSimpletById")]
+        [HttpGet, Route("GetSimpleById")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

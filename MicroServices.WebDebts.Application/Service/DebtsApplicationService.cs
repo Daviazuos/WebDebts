@@ -31,8 +31,6 @@ namespace MicroServices.WebDebts.Application.Services
         {
             var debt = createDebtsRequest.ToEntity();
             
-
-
             await _debtsServices.CreateDebtAsync(debt, DebtType.Simple);
             await _unitOfWork.CommitAsync();
             
