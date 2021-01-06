@@ -1,12 +1,10 @@
 ﻿using MicroServices.WebDebts.Domain.Models;
-using System;
 using System.Threading.Tasks;
 
 namespace MicroServices.WebDebts.Domain.Interfaces.Repository
 {
-    public interface IDebtRepository : IBaseRepository<Debt>
+    public interface ICardRepository : IBaseRepository<Card>
     {
-        Task<Debt> GetAllByIdAsync(Guid Id);
-        Task DeleteDebt(Guid Id);
+        Task<Card> GetCardByName(string cardName);
     }
 }

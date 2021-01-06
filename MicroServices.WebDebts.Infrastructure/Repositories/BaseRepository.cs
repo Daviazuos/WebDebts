@@ -1,5 +1,4 @@
 ﻿using MicroServices.WebDebts.Domain.Interfaces.Repository;
-using MicroServices.WebDebts.Infrastructure.Database;
 using MicroServices.WebDebts.Infrastructure.Database.Postgres;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -21,7 +20,7 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
 
         public async Task AddAsync(T model)
         {
-            await _context.AddAsync(model);
+            await _dbSet.AddAsync(model);
         }
 
         public Task AddManyAsync(IEnumerable<T> model)
@@ -29,14 +28,14 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<T> FindByIdAsync(Guid id)
+        public async Task<T> FindByIdAsync(Guid id)
         {
-            throw new NotImplementedException();
+            return await _dbSet.FindAsync(id);
         }
 
-        public Task Remove(T model)
+        public async Task Remove(T model)
         {
-            throw new NotImplementedException();
+            _dbSet.Remove(model);
         }
 
         public Task UpdateAsync(T model)

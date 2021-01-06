@@ -2,7 +2,7 @@
 
 namespace MicroServices.WebDebts.Domain.Models
 {
-    public class BaseDebt
+    public class ModelBase
     {
         public Guid Id { get; set; }
         public DateTime CreatedAt { get; set; }

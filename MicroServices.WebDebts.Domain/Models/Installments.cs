@@ -3,7 +3,7 @@ using System;
 
 namespace MicroServices.WebDebts.Domain.Models
 {
-    public class Installments : BaseDebt
+    public class Installments : ModelBase
     {
         public DateTime Date { get; set; }
         public DateTime? PaymentDate { get; set; }

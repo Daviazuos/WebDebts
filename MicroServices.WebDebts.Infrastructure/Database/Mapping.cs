@@ -11,6 +11,11 @@ namespace MicroServices.WebDebts.Infrastructure.Database
            
             modelBuilder.Entity<Debt>()
                 .HasMany(d => d.Installments);
+
+            modelBuilder.Entity<Card>().HasKey(k => k.Id);
+
+            modelBuilder.Entity<Card>()
+                .HasMany(d => d.DebtValues);
        }
     }
 }

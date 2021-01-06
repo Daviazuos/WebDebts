@@ -1,18 +1,18 @@
 ﻿using MicroServices.WebDebts.Application.Models;
 using MicroServices.WebDebts.Application.Models.Mappers;
 using MicroServices.WebDebts.Domain.Interfaces.Repository;
-using MicroServices.WebDebts.Domain.Models;
 using MicroServices.WebDebts.Domain.Models.Enum;
 using MicroServices.WebDebts.Domain.Services;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace MicroServices.WebDebts.Application.Services
 {
     public interface IDebtsApplicationService
     {
-        Task<bool> CreateSimpleDebt(DebtsAppModel createDebtsRequest);
+        Task<Guid> CreateDebt(DebtsAppModel createDebtsRequest);
+        Task<GetDebtByIdResponse> GetDebtsById(Guid id);
+        Task DeletePerson(DeleteDebtByIdRequest deletePersonRequest);
     }
 
     public class DebtsApplicationService : IDebtsApplicationService
@@ -21,48 +21,35 @@ namespace MicroServices.WebDebts.Application.Services
 
         private readonly IUnitOfWork _unitOfWork;
 
-        public DebtsApplicationService(IDebtsService debtsServices, IUnitOfWork unitOfWork)
+        public DebtsApplicationService(IDebtsService debtsServices, IUnitOfWork unitOfWork, IDebtRepository debtRepository)
         {
             _debtsServices = debtsServices;
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<bool> CreateSimpleDebt(DebtsAppModel createDebtsRequest)
+        public async Task<Guid> CreateDebt(DebtsAppModel createDebtsRequest)
         {
-            var installments = CreateInstallments(createDebtsRequest);
-
             var debt = createDebtsRequest.ToEntity();
-
-            debt.Installments = installments;
-            debt.Id = Guid.NewGuid();
-
-            await _debtsServices.CreateDebt(debt);
+            
+            await _debtsServices.CreateDebtAsync(debt, DebtType.Simple);
             await _unitOfWork.CommitAsync();
-            return true;
+            
+            return debt.Id;
         }
 
-        public static List<Installments> CreateInstallments(DebtsAppModel debts)
+        public async Task DeletePerson(DeleteDebtByIdRequest deleteDebtByIdRequest)
         {
-            var installmentsList = new List<Installments>();
-            var installmentValue = debts.Value / debts.NumberOfInstallments;
+            await _debtsServices.DeleteDebt(deleteDebtByIdRequest.Id);
+            await _unitOfWork.CommitAsync();
+        }
 
-            for (int i = 0; i < debts.NumberOfInstallments; i++)
-            {
-                var installment = new Installments
-                {
-                    Id = Guid.NewGuid(),
-                    CreatedAt = DateTime.Now,
-                    InstallmentNumber = i + 1,
-                    Date = debts.Date.AddMonths(i),
-                    Status = Status.NotPaid,
-                    PaymentDate = null,
-                    Value = installmentValue
-                };
+        public async Task<GetDebtByIdResponse> GetDebtsById(Guid id)
+        {
+            var debt = await _debtsServices.GetAllByIdAsync(id);
 
-                installmentsList.Add(installment);
-            }
+            var debtAppResult = debt.ToResponseModel();
 
-            return installmentsList;
+            return debtAppResult;
         }
     }
 }

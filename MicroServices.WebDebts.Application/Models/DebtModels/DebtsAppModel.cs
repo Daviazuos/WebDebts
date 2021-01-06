@@ -9,6 +9,6 @@ namespace MicroServices.WebDebts.Application.Models
         public decimal Value { get; set; }
         public DateTime Date { get; set; }
         public int NumberOfInstallments { get; set; }
-        public DebtType DebtType { get; set; }
+        public DebtInstallmentType DebtInstallmentType { get; set; }
     }
 }
