@@ -13,7 +13,7 @@ namespace MicroServices.WebDebts.Application.Service
     public interface ICardsApplicationService
     {
         Task<GenericResponse> CreateCard(CardAppModel cardAppModel);
-        Task<GenericResponse> AddValuesCard(DebtsAppModel debtsAppModel, string CardName);
+        Task<GenericResponse> AddValuesCard(DebtsAppModel debtsAppModel, Guid cardId);
         Task<GetCardByIdResponse> GetCardById(Guid id);
         Task<GetCardByIdResponse> GetCardValuesById(Guid id);
     }
@@ -30,10 +30,10 @@ namespace MicroServices.WebDebts.Application.Service
             _debtsService = debtsService;
         }
 
-        public async Task<GenericResponse> AddValuesCard(DebtsAppModel debtsAppModel, string CardName)
+        public async Task<GenericResponse> AddValuesCard(DebtsAppModel debtsAppModel, Guid cardId)
         {
             var debt = debtsAppModel.ToEntity();
-            var debtCard = await _cardService.LinkCard(debt, CardName);
+            var debtCard = await _cardService.LinkCard(debt, cardId);
 
             await _debtsService.CreateDebtAsync(debtCard, DebtType.Card);
             await _unitOfWork.CommitAsync();
@@ -53,7 +53,6 @@ namespace MicroServices.WebDebts.Application.Service
         public async Task<GetCardByIdResponse> GetCardById(Guid id)
         {
             var card = await _cardService.GetAllByIdAsync(id);
-
             var cardAppResult = card.ToResponseModel();
 
             return cardAppResult;
@@ -62,7 +61,6 @@ namespace MicroServices.WebDebts.Application.Service
         public async Task<GetCardByIdResponse> GetCardValuesById(Guid id)
         {
             var card = await _cardService.GetAllCardValuesByIdAsync(id);
-
             var cardAppResult = card.ToResponseModel();
 
             return cardAppResult;
