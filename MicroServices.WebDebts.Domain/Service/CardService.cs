@@ -11,6 +11,7 @@ namespace MicroServices.WebDebts.Domain.Service
 
         Task<Debt> LinkCard(Debt debt, string CardName);
         Task<Card> GetAllByIdAsync(Guid id);
+        Task<Card> GetAllCardValuesByIdAsync(Guid id);
     }
     public class CardService : ICardService
     {
@@ -32,6 +33,11 @@ namespace MicroServices.WebDebts.Domain.Service
         public async Task<Card> GetAllByIdAsync(Guid id)
         {
             return await _cardRepository.FindByIdAsync(id);
+        }
+
+        public async Task<Card> GetAllCardValuesByIdAsync(Guid id)
+        {
+            return await _cardRepository.FindCardValuesByIdAsync(id);
         }
 
         public async Task<Debt> LinkCard(Debt debt, string CardName)

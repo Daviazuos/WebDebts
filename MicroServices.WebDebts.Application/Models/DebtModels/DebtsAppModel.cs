@@ -1,5 +1,5 @@
-﻿using MicroServices.WebDebts.Domain.Models.Enum;
-using System;
+﻿using System;
+using static MicroServices.WebDebts.Application.Models.EnumAppModel;
 
 namespace MicroServices.WebDebts.Application.Models
 {
@@ -9,6 +9,6 @@ namespace MicroServices.WebDebts.Application.Models
         public decimal Value { get; set; }
         public DateTime Date { get; set; }
         public int NumberOfInstallments { get; set; }
-        public DebtInstallmentType DebtInstallmentType { get; set; }
+        public DebtInstallmentTypeApp DebtInstallmentType { get; set; }
     }
 }

@@ -1,6 +1,6 @@
-﻿using MicroServices.WebDebts.Domain.Models;
-using MicroServices.WebDebts.Domain.Models.Enum;
+﻿using MicroServices.WebDebts.Application.Models.DebtModels;
 using System.Collections.Generic;
+using static MicroServices.WebDebts.Application.Models.EnumAppModel;
 
 namespace MicroServices.WebDebts.Application.Models
 {
@@ -9,9 +9,8 @@ namespace MicroServices.WebDebts.Application.Models
         public string Name { get; set; }
         public decimal Value { get; set; }
         public int NumberOfInstallments { get; set; }
-        // remover enum de domain daqui 
-        public DebtType DebtType { get; set; }
-        public DebtInstallmentType DebtInstallmentType { get; set; }
-        public List<Installments> Installments { get; set; }
+        public DebtTypeApp DebtType { get; set; }
+        public DebtInstallmentTypeApp DebtInstallmentType { get; set; }
+        public List<InstallmentsAppModel> Installments { get; set; }
     }
 }

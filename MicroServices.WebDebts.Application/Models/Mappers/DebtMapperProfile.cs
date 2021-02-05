@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MicroServices.WebDebts.Application.Models.DebtModels;
 using MicroServices.WebDebts.Domain.Models;
 
 namespace MicroServices.WebDebts.Application.Models.Mappers
@@ -23,6 +24,9 @@ namespace MicroServices.WebDebts.Application.Models.Mappers
                 .ForMember(x => x.Installments, opts => opts.MapFrom(x =>x.Installments))
                 .ForMember(x => x.DebtType, opts => opts.MapFrom(x =>x.DebtType))
                 .IgnoreAllSourcePropertiesWithAnInaccessibleSetter()
+                .ReverseMap();
+            
+            this.CreateMap<Installments, InstallmentsAppModel>()
                 .ReverseMap();
         }
     }
