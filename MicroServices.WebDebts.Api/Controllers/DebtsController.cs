@@ -1,4 +1,5 @@
 ﻿using MicroServices.WebDebts.Application.Models;
+using MicroServices.WebDebts.Application.Models.DebtModels;
 using MicroServices.WebDebts.Application.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,14 +24,14 @@ namespace MicroServices.WebDebts.Api.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<Guid>> CreateSimpleAsync([FromBody] DebtsAppModel createDebtsRequest)
+        public async Task<ActionResult<GenericResponse>> CreateSimpleAsync([FromBody] DebtsAppModel createDebtsRequest)
         {
             var debt = await _debtsApplicationService.CreateDebt(createDebtsRequest);
 
             return new OkObjectResult(debt);
         }
 
-        [HttpGet, Route("GetSimpleById")]
+        [HttpGet, Route("GetDebtById")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -39,6 +40,17 @@ namespace MicroServices.WebDebts.Api.Controllers
             var debt = await _debtsApplicationService.GetDebtsById(getDebtByIdRequest.Id);
 
             return new OkObjectResult(debt); 
+        }
+
+        [HttpGet, Route("FilterDebt")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<GetDebtByIdResponse>> FilterAsync([FromQuery] FilterDebtRequest filterDebtRequest)
+        {
+            var debt = await _debtsApplicationService.FilterDebtsById(filterDebtRequest);
+
+            return new OkObjectResult(debt);
         }
 
         [HttpDelete, Route("Delete")]

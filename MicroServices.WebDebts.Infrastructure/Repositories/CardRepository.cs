@@ -2,6 +2,7 @@
 using MicroServices.WebDebts.Domain.Models;
 using MicroServices.WebDebts.Infrastructure.Database.Postgres;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,6 +17,13 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
         {
             _dbSet = context.Set<Card>();
             _context = context;
+        }
+
+        public async Task<Card> FindCardValuesByIdAsync(Guid id)
+        {
+            return _dbSet.Include(x => x.DebtValues)
+                         .ThenInclude(x => x.Installments)
+                         .Where(x => x.Id == id).FirstOrDefault();
         }
 
         public async Task<Card> GetCardByName(string cardName)

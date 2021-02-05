@@ -12,5 +12,9 @@
   <ItemGroup>
     <ProjectReference Include="..\MicroServices.WebDebts.Domain\MicroServices.WebDebts.Domain.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Validator\" />
+  </ItemGroup>
   
 </Project>

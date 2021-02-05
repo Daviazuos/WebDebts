@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MicroServices.WebDebts.Application.Models
+﻿namespace MicroServices.WebDebts.Application.Models
 {
     public class CardAppModel
     {

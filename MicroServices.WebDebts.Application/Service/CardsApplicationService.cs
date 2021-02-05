@@ -1,4 +1,5 @@
 ﻿using MicroServices.WebDebts.Application.Models;
+using MicroServices.WebDebts.Application.Models.DebtModels;
 using MicroServices.WebDebts.Application.Models.Mappers;
 using MicroServices.WebDebts.Domain.Interfaces.Repository;
 using MicroServices.WebDebts.Domain.Models.Enum;
@@ -11,9 +12,10 @@ namespace MicroServices.WebDebts.Application.Service
 {
     public interface ICardsApplicationService
     {
-        Task<Guid> CreateCard(CardAppModel cardAppModel);
-        Task<Guid> AddValuesCard(DebtsAppModel debtsAppModel, string CardName);
+        Task<GenericResponse> CreateCard(CardAppModel cardAppModel);
+        Task<GenericResponse> AddValuesCard(DebtsAppModel debtsAppModel, string CardName);
         Task<GetCardByIdResponse> GetCardById(Guid id);
+        Task<GetCardByIdResponse> GetCardValuesById(Guid id);
     }
     public class CardsApplicationService : ICardsApplicationService
     {
@@ -28,29 +30,38 @@ namespace MicroServices.WebDebts.Application.Service
             _debtsService = debtsService;
         }
 
-        public async Task<Guid> AddValuesCard(DebtsAppModel debtsAppModel, string CardName)
+        public async Task<GenericResponse> AddValuesCard(DebtsAppModel debtsAppModel, string CardName)
         {
             var debt = debtsAppModel.ToEntity();
-            var debtCard = await _cardService.LinkCard(debt, CardName); 
+            var debtCard = await _cardService.LinkCard(debt, CardName);
 
             await _debtsService.CreateDebtAsync(debtCard, DebtType.Card);
             await _unitOfWork.CommitAsync();
 
-            return debt.Id;
+            return new GenericResponse { Id = debt.Id };
         }
 
-        public async Task<Guid> CreateCard(CardAppModel cardAppModel)
+        public async Task<GenericResponse> CreateCard(CardAppModel cardAppModel)
         {
             var card = cardAppModel.ToEntity();
             var cardId = await _cardService.CreateCardAsync(card);
             await _unitOfWork.CommitAsync();
 
-            return cardId;
+            return new GenericResponse { Id = cardId };
         }
 
         public async Task<GetCardByIdResponse> GetCardById(Guid id)
         {
             var card = await _cardService.GetAllByIdAsync(id);
+
+            var cardAppResult = card.ToResponseModel();
+
+            return cardAppResult;
+        }
+
+        public async Task<GetCardByIdResponse> GetCardValuesById(Guid id)
+        {
+            var card = await _cardService.GetAllCardValuesByIdAsync(id);
 
             var cardAppResult = card.ToResponseModel();
 
