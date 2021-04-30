@@ -17,6 +17,7 @@ namespace MicroServices.WebDebts.Application.Models.Mappers
                 .ReverseMap();
 
             this.CreateMap<Debt, GetDebtByIdResponse>()
+                .ForMember(x => x.Id, opts => opts.MapFrom(x => x.Id))
                 .ForMember(x => x.Name, opts => opts.MapFrom(x => x.Name))
                 .ForMember(x => x.Value, opts => opts.MapFrom(x => x.Value))
                 .ForMember(x => x.NumberOfInstallments, opts => opts.MapFrom(x => x.NumberOfInstallments))

@@ -17,17 +17,22 @@ namespace MicroServices.WebDebts.Application.Services
         Task<GetDebtByIdResponse> GetDebtsById(Guid id);
         Task DeletePerson(DeleteDebtByIdRequest deletePersonRequest);
         Task<List<GetDebtByIdResponse>> FilterDebtsById(FilterDebtRequest filterDebtRequest);
+        Task<List<FilterInstallmentsResponse>> FilterInstallments(FilterInstallmentsRequest filterInstallmentsRequest);
+        Task PutInstallments(PutInstallmentsRequest putInstallmentsRequest);
     }
 
     public class DebtsApplicationService : IDebtsApplicationService
     {
         private readonly IDebtsService _debtsServices;
 
+        private readonly IDebtRepository _debtRepository;
+
         private readonly IUnitOfWork _unitOfWork;
 
         public DebtsApplicationService(IDebtsService debtsServices, IUnitOfWork unitOfWork, IDebtRepository debtRepository)
         {
             _debtsServices = debtsServices;
+            _debtRepository = debtRepository;
             _unitOfWork = unitOfWork;
         }
 
@@ -51,13 +56,23 @@ namespace MicroServices.WebDebts.Application.Services
         {
             var debt = await _debtsServices.FilterDebtsAsync(filterDebtRequest.Name, 
                                                              filterDebtRequest.Value, 
-                                                             filterDebtRequest.Date, 
+                                                             filterDebtRequest.StartDate,
+                                                             filterDebtRequest.FInishDate,
                                                              (DebtInstallmentType?)filterDebtRequest.DebtInstallmentType, 
                                                              (DebtType?)filterDebtRequest.DebtType);
 
             var debtAppResult = debt.Select(x => x.ToResponseModel()).ToList();
 
             return debtAppResult;
+        }
+
+        public async Task<List<FilterInstallmentsResponse>> FilterInstallments(FilterInstallmentsRequest filterInstallmentsRequest)
+        {
+            var debts = await _debtRepository.FilterInstallmentsAsync(filterInstallmentsRequest.DebtId, filterInstallmentsRequest.Month, filterInstallmentsRequest.Year);
+
+            var installmentsApp = debts.Select( x => x.ToResponse()).OrderBy(x => x.InstallmentNumber);
+
+            return installmentsApp.ToList();
         }
 
         public async Task<GetDebtByIdResponse> GetDebtsById(Guid id)
@@ -67,6 +82,12 @@ namespace MicroServices.WebDebts.Application.Services
             var debtAppResult = debt.ToResponseModel();
 
             return debtAppResult;
+        }
+
+        public async Task PutInstallments(PutInstallmentsRequest putInstallmentsRequest)
+        {
+            await _debtRepository.UpdateInstallmentAsync(putInstallmentsRequest.Id, putInstallmentsRequest.InstallmentsStatus);
+            await _unitOfWork.CommitAsync();
         }
     }
 }

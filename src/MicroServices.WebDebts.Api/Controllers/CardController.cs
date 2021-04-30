@@ -3,6 +3,7 @@ using MicroServices.WebDebts.Application.Models.DebtModels;
 using MicroServices.WebDebts.Application.Service;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Net.Mime;
 using System.Threading.Tasks;
 
@@ -34,9 +35,9 @@ namespace MicroServices.WebDebts.Api.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<GenericResponse>> AddValuesCardAsync([FromBody] DebtsAppModel debtsAppModel, string CardName)
+        public async Task<ActionResult<GenericResponse>> AddValuesCardAsync([FromBody] DebtsAppModel debtsAppModel, Guid CardId)
         {
-            var cardId = await _cardsApplicationService.AddValuesCard(debtsAppModel, CardName);
+            var cardId = await _cardsApplicationService.AddValuesCard(debtsAppModel, CardId);
 
             return new OkObjectResult(cardId);
         }

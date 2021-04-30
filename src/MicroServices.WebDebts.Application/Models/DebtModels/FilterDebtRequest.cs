@@ -7,7 +7,8 @@ namespace MicroServices.WebDebts.Application.Models
     {
         public string Name { get; set; }
         public decimal? Value { get; set; }
-        public DateTime? Date { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? FInishDate { get; set; }
         public DebtInstallmentTypeApp? DebtInstallmentType { get; set; }
         public DebtTypeApp? DebtType { get; set; }
     }

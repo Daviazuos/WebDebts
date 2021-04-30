@@ -33,33 +33,27 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             _dbSetInstallment.RemoveRange(debtToRemove.SelectMany(x => x.Installments));
         }
 
-        public async Task<List<Debt>> FindDebtAsync(string name, decimal? value, DateTime? date, DebtInstallmentType? debtInstallmentType, DebtType? debtType)
+        public async Task<List<Debt>> FindDebtAsync(string name, decimal? value, DateTime? startDate, DateTime? finishDate, DebtInstallmentType? debtInstallmentType, DebtType? debtType)
         {
-            var resultQuery = _dbSet.Include(p => p.Installments)
-                                    .Select(x => x);
+            var query = _dbSet.Include(x => x.Installments);
 
-            if (!String.IsNullOrEmpty(name))
-            {
-                resultQuery = resultQuery.Where(p => p.Name.ToLower().Contains(name.ToLower()));
-            }
-            if (value != null)
-            {
-                resultQuery = resultQuery.Where(p => p.Value == value);
-            }
-            if (date != null)
-            {
-                resultQuery = resultQuery.Where(p => p.Date == date);
-            }
-            if (debtInstallmentType != null)
-            {
-                resultQuery = resultQuery.Where(p => p.DebtInstallmentType == debtInstallmentType);
-            }
-            if (debtType != null)
-            {
-                resultQuery = resultQuery.Where(p => p.DebtType == debtType);
-            }
+            var queryFilter = await DebtsFilters(query, name, value, startDate, finishDate, debtInstallmentType, debtType).ToListAsync();
 
-            return await resultQuery.ToListAsync();
+            var result = new List<Debt>();
+
+            if (startDate.HasValue || finishDate.HasValue)
+            {
+                foreach (var debt in queryFilter)
+                {
+                    var instalments = debt.Installments.Where(x => x.Date >= startDate && x.Date <= finishDate).ToList();
+                    debt.Installments = instalments;
+                    result.Add(debt);
+                }
+            }
+            else
+                return queryFilter; 
+
+            return result;
         }
 
         public async Task<Debt> GetAllByIdAsync(Guid Id)
@@ -70,6 +64,72 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             resultQuery.Installments = resultQuery.Installments.OrderBy(x => x.Date).ToList();
 
             return resultQuery;
+        }
+
+        private static IQueryable<Debt> DebtsFilters(IQueryable<Debt> resultQuery,
+                                                                      string name, 
+                                                                      decimal? value, 
+                                                                      DateTime? startDate, 
+                                                                      DateTime? finishDate, 
+                                                                      DebtInstallmentType? debtInstallmentType, 
+                                                                      DebtType? debtType)
+        {
+            if (!String.IsNullOrEmpty(name))
+            {
+                resultQuery = resultQuery.Where(p => p.Name.ToLower().Contains(name.ToLower()));
+            }
+            if (value != null)
+            {
+                resultQuery = resultQuery.Where(p => p.Value == value);
+            }
+            if (debtInstallmentType != null)
+            {
+                resultQuery = resultQuery.Where(p => p.DebtInstallmentType == debtInstallmentType);
+            }
+            if (debtType != null)
+            {
+                resultQuery = resultQuery.Where(p => p.DebtType == debtType);
+            }
+
+            return resultQuery;
+        }
+
+        public async Task<List<Installments>> FilterInstallmentsAsync(Guid? debtId, int? month, int? year)
+        {
+            var installments = _context.Debt.Include(x => x.Installments).SelectMany(x => x.Installments).AsQueryable();
+
+            if (debtId.HasValue)
+                installments = _context.Debt.Include(x => x.Installments).Where(x => x.Id == debtId.Value).SelectMany(x => x.Installments).AsQueryable();
+
+            var resultFilter = InstallmentsFilters(installments, month, year);
+
+            return await resultFilter.ToListAsync();
+        }
+
+        private static IQueryable<Installments> InstallmentsFilters(IQueryable<Installments> resultQuery, int? month, int? year)
+        {
+            if (month.HasValue)
+            {
+                resultQuery = resultQuery.Where(x => x.Date.Month == month.Value);
+            }
+            if (year.HasValue)
+            {
+                resultQuery = resultQuery.Where(x => x.Date.Year == year.Value);
+            }
+            
+            return resultQuery;
+        }
+
+        public async Task UpdateInstallmentAsync(Guid id, Status status)
+        {
+            var installment = await _context.Debt.SelectMany(x => x.Installments.Where(x => x.Id == id)).FirstOrDefaultAsync();
+
+            installment.Status = status;
+
+            if (status == Status.Paid)
+                installment.PaymentDate = DateTime.Now;
+            else
+                installment.PaymentDate = null;
         }
     }
 }

@@ -53,6 +53,28 @@ namespace MicroServices.WebDebts.Api.Controllers
             return new OkObjectResult(debt);
         }
 
+        [HttpGet, Route("FilterInstallments")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult> FilterInstallmentsAsync([FromQuery] FilterInstallmentsRequest filterInstallmentsRequest)
+        {
+            var installments = await _debtsApplicationService.FilterInstallments(filterInstallmentsRequest);
+
+            return new OkObjectResult(installments);
+        }
+
+        [HttpPut, Route("InstallmentsStatus")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult> PutInstallmentsAsync([FromQuery] PutInstallmentsRequest putInstallmentsRequest)
+        {
+            await _debtsApplicationService.PutInstallments(putInstallmentsRequest);
+
+            return new NoContentResult();
+        }
+
         [HttpDelete, Route("Delete")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]

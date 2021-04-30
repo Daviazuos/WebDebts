@@ -16,7 +16,8 @@ namespace MicroServices.WebDebts.Domain.Services
 
         Task<List<Debt>> FilterDebtsAsync(string name, 
                                          decimal? value, 
-                                         DateTime? date, 
+                                         DateTime? startDate, 
+                                         DateTime? finishDate, 
                                          DebtInstallmentType? debtInstallmentType, 
                                          DebtType? debtType);
         Task DeleteDebt(Guid id);
@@ -40,14 +41,15 @@ namespace MicroServices.WebDebts.Domain.Services
                 debt.Date = CardRules.CardDateRule(debt.Card.ClosureDate, debt.Card.DueDate, debt).Date;
             }
 
-            // TODO ver forma de fazer isso melhor
-
             if (debt.DebtInstallmentType == DebtInstallmentType.Simple)
                 classInstallments.SetStrategy(new CreateSimpleInstallments());
             else if (debt.DebtInstallmentType == DebtInstallmentType.Fixed)
                 classInstallments.SetStrategy(new CreateFixedInstallments());
             else if (debt.DebtInstallmentType == DebtInstallmentType.Installment)
+            {
                 classInstallments.SetStrategy(new CreateInstallments());
+                debt.Value = debt.Value * debt.NumberOfInstallments;
+            }
 
             var installments = classInstallments.CreateInstallments(debt);
 
@@ -64,9 +66,9 @@ namespace MicroServices.WebDebts.Domain.Services
             await _debtRepository.DeleteDebt(id);
         }
 
-        public async Task<List<Debt>> FilterDebtsAsync(string name, decimal? value, DateTime? date, DebtInstallmentType? debtInstallmentType, DebtType? debtType)
+        public async Task<List<Debt>> FilterDebtsAsync(string name, decimal? value, DateTime? startDate, DateTime? finishDate, DebtInstallmentType? debtInstallmentType, DebtType? debtType)
         {
-            return await _debtRepository.FindDebtAsync(name, value, date, debtInstallmentType, debtType);
+            return await _debtRepository.FindDebtAsync(name, value, startDate, finishDate, debtInstallmentType, debtType);
         }
 
         public async Task<Debt> GetAllByIdAsync(Guid id)
