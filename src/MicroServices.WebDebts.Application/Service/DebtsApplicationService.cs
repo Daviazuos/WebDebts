@@ -68,7 +68,11 @@ namespace MicroServices.WebDebts.Application.Services
 
         public async Task<List<FilterInstallmentsResponse>> FilterInstallments(FilterInstallmentsRequest filterInstallmentsRequest)
         {
-            var debts = await _debtRepository.FilterInstallmentsAsync(filterInstallmentsRequest.DebtId, filterInstallmentsRequest.Month, filterInstallmentsRequest.Year);
+            var debts = await _debtRepository.FilterInstallmentsAsync(filterInstallmentsRequest.DebtId, 
+                                                                      filterInstallmentsRequest.Month, 
+                                                                      filterInstallmentsRequest.Year, 
+                                                                      (DebtInstallmentType?)filterInstallmentsRequest.DebtInstallmentType,
+                                                                      (Status?)filterInstallmentsRequest.StatusApp);
 
             var installmentsApp = debts.Select( x => x.ToResponse()).OrderBy(x => x.InstallmentNumber);
 

@@ -94,19 +94,22 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             return resultQuery;
         }
 
-        public async Task<List<Installments>> FilterInstallmentsAsync(Guid? debtId, int? month, int? year)
+        public async Task<List<Installments>> FilterInstallmentsAsync(Guid? debtId, int? month, int? year, DebtInstallmentType? debtInstallmentType, Status? status)
         {
             var installments = _context.Debt.Include(x => x.Installments).SelectMany(x => x.Installments).AsQueryable();
 
             if (debtId.HasValue)
                 installments = _context.Debt.Include(x => x.Installments).Where(x => x.Id == debtId.Value).SelectMany(x => x.Installments).AsQueryable();
-
-            var resultFilter = InstallmentsFilters(installments, month, year);
+            
+            if (debtInstallmentType.HasValue)
+                installments = _context.Debt.Include(x => x.Installments).Where(x => x.DebtInstallmentType == debtInstallmentType.Value).SelectMany(x => x.Installments).AsQueryable();
+            
+            var resultFilter = InstallmentsFilters(installments, month, year, status);
 
             return await resultFilter.ToListAsync();
         }
 
-        private static IQueryable<Installments> InstallmentsFilters(IQueryable<Installments> resultQuery, int? month, int? year)
+        private static IQueryable<Installments> InstallmentsFilters(IQueryable<Installments> resultQuery, int? month, int? year, Status? status)
         {
             if (month.HasValue)
             {
@@ -116,7 +119,11 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             {
                 resultQuery = resultQuery.Where(x => x.Date.Year == year.Value);
             }
-            
+            if (status.HasValue)
+            {
+                resultQuery = resultQuery.Where(x => x.Status == status.Value);
+            }
+
             return resultQuery;
         }
 
