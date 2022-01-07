@@ -6,6 +6,7 @@ namespace MicroServices.WebDebts.Application.Models
     public class FilterInstallmentsResponse
     {
         public Guid Id { get; set; }
+        public string DebtName { get; set; }
         public DateTime Date { get; set; }
         public DateTime? PaymentDate { get; set; }
         public int InstallmentNumber { get; set; }

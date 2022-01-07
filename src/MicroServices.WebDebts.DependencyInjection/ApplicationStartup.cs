@@ -27,18 +27,21 @@ namespace MicroServices.WebDebts.DependencyInjection
         {
             services.AddScoped<IDebtsApplicationService, DebtsApplicationService>();
             services.AddScoped<ICardsApplicationService, CardsApplicationService>();
+            services.AddScoped<IWalletApplicationService, WalletApplicationService>();
         }
 
         public static void RegisterDomain(IServiceCollection services)
         {
             services.AddScoped<IDebtsService, DebtsService>();
             services.AddScoped<ICardService, CardService>();
+            services.AddScoped<IWalletService, WalletService>();
         }
 
         public static void RegisterInfrastructure(IServiceCollection services)
         {
             services.AddScoped<IDebtRepository, DebtRepository>();
             services.AddScoped<ICardRepository, CardRepository>();
+            services.AddScoped<IWalletRepository, WalletRepository>();
         }
     }
 }

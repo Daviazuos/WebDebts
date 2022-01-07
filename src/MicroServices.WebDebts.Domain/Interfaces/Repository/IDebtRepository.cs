@@ -13,5 +13,6 @@ namespace MicroServices.WebDebts.Domain.Interfaces.Repository
         Task<List<Debt>> FindDebtAsync(string name, decimal? value, DateTime? startDate, DateTime? finishDate, DebtInstallmentType? debtInstallmentType, DebtType? debtType);
         Task<List<Installments>> FilterInstallmentsAsync(Guid? debtId, int? month, int? year, DebtInstallmentType? debtInstallmentType, Status? status);
         Task UpdateInstallmentAsync(Guid id, Status status);
+        Task<List<Installments>> GetSumPerMonthAsync(int? month, int? year);
     }
 }

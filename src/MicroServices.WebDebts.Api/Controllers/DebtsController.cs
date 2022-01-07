@@ -4,6 +4,7 @@ using MicroServices.WebDebts.Application.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.Net.Mime;
 using System.Threading.Tasks;
 
@@ -84,6 +85,17 @@ namespace MicroServices.WebDebts.Api.Controllers
             await _debtsApplicationService.DeletePerson(deletePersonRequest);
 
             return NoContent();
+        }
+
+        [HttpGet, Route("GetSumByMonth")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<List<GetSumbyMonthResponse>>> GetSumByMonth([FromQuery] GetSumByMonthRequest getSumByMonthRequest)
+        {
+            var response = await _debtsApplicationService.GetSumByMonth(getSumByMonthRequest);
+
+            return new OkObjectResult(response);
         }
     }
 }

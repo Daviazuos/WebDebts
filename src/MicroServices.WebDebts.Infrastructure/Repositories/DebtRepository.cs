@@ -138,5 +138,18 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             else
                 installment.PaymentDate = null;
         }
+
+        public async Task<List<Installments>> GetSumPerMonthAsync(int? month, int? year)
+        {
+            var startDate = new DateTime(year.Value, month.Value, 1, 0, 0, 0);
+            var finishDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 31);
+
+
+            var installments = _context.Debt.Include(x => x.Installments).SelectMany(x => x.Installments).AsQueryable();
+            installments = installments.Where(x => x.Date >= startDate.Date);
+            installments = installments.Where(x => x.Date <= finishDate.Date);
+
+            return await installments.ToListAsync();
+        }
     }
 }

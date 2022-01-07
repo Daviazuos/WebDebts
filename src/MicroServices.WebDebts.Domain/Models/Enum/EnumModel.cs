@@ -24,4 +24,10 @@
         Simple = 0,
         Card = 1
     }
+
+    public enum WalletStatus
+    {
+        Enable = 0,
+        Disable = 1
+    }
 }

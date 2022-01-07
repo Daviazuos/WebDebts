@@ -2,7 +2,6 @@ dotnet ef --startup-project ../MicroServices.WebDebts.Api migrations add init --
 
 dotnet ef --startup-project ../MicroServices.WebDebts.Api database update --context DataContext
 
-
 Payload 
 {
   "name": "tv",
@@ -11,3 +10,14 @@ Payload
   "numberOfInstallments": 10,
   "debtType": "Installment"
 }
+
+docker build -t web-debt-api .
+
+
+deploy
+
+heroku container:push web -a web-debts
+
+heroku container:release web -a web-debts
+
+

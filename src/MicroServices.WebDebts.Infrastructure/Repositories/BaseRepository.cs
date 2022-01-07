@@ -38,9 +38,9 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             _dbSet.Remove(model);
         }
 
-        public Task UpdateAsync(T model)
+        public async Task UpdateAsync(T model)
         {
-            throw new NotImplementedException();
+            _dbSet.Update(model);
         }
     }
 }
