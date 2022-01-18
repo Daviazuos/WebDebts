@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MicroServices.WebDebts.Application.Models.DebtModels;
 using MicroServices.WebDebts.Domain.Models;
 
 namespace MicroServices.WebDebts.Application.Models.Mappers
@@ -23,9 +24,19 @@ namespace MicroServices.WebDebts.Application.Models.Mappers
             return Mapper.Map<Card>(model);
         }
 
-        public static GetCardByIdResponse ToResponseModel(this Card model)
+        public static GetCardsResponse ToResponseModel(this Card model)
         {
-            return Mapper.Map<GetCardByIdResponse>(model);
+            return Mapper.Map<GetCardsResponse>(model);
+        }
+
+        public static CreateDebtAppModel ToCreateModel(this Debt entity)
+        {
+            return Mapper.Map<CreateDebtAppModel>(entity);
+        }
+
+        public static Debt ToCreateModel(this CreateDebtAppModel entity)
+        {
+            return Mapper.Map<Debt>(entity);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using MicroServices.WebDebts.Application.Models;
 using MicroServices.WebDebts.Application.Models.DebtModels;
 using MicroServices.WebDebts.Application.Service;
+using MicroServices.WebDebts.Domain.Models.Enum;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -42,13 +43,13 @@ namespace MicroServices.WebDebts.Api.Controllers
             return new OkObjectResult(cardId);
         }
 
-        [HttpGet, Route("GetEnableWallets")]
+        [HttpGet, Route("GetWallets")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<GetWalletByIdResponse>> GetEnableWallet()
+        public async Task<ActionResult<GetWalletByIdResponse>> GetWallets(WalletStatus walletStatus)
         {
-            var wallet = await _walletApplicationService.GetEnableWallet();
+            var wallet = await _walletApplicationService.GetWallets(walletStatus);
 
             return new OkObjectResult(wallet);
         }

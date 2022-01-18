@@ -10,5 +10,7 @@ namespace MicroServices.WebDebts.Domain.Models
         public int InstallmentNumber { get; set; }
         public decimal Value { get; set; }
         public Status Status { get; set; }
+        public Debt Debt { get; set; }
+        public Guid? WalletMonthControllerId { get; set; }
     }
 }

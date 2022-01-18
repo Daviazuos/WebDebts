@@ -5,6 +5,7 @@ namespace MicroServices.WebDebts.Application.Models
 {
     public class FilterDebtRequest
     {
+        public int PageNumber { get; set; }
         public string Name { get; set; }
         public decimal? Value { get; set; }
         public DateTime? StartDate { get; set; }

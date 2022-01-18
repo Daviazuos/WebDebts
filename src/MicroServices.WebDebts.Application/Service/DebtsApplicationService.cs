@@ -2,6 +2,7 @@
 using MicroServices.WebDebts.Application.Models.DebtModels;
 using MicroServices.WebDebts.Application.Models.Mappers;
 using MicroServices.WebDebts.Domain.Interfaces.Repository;
+using MicroServices.WebDebts.Domain.Models.Commom;
 using MicroServices.WebDebts.Domain.Models.Enum;
 using MicroServices.WebDebts.Domain.Services;
 using System;
@@ -13,11 +14,11 @@ namespace MicroServices.WebDebts.Application.Services
 {
     public interface IDebtsApplicationService
     {
-        Task<GenericResponse> CreateDebt(DebtsAppModel createDebtsRequest);
+        Task<GenericResponse> CreateDebt(CreateDebtAppModel createDebtsRequest);
         Task<GetDebtByIdResponse> GetDebtsById(Guid id);
         Task DeletePerson(DeleteDebtByIdRequest deletePersonRequest);
-        Task<List<GetDebtByIdResponse>> FilterDebtsById(FilterDebtRequest filterDebtRequest);
-        Task<List<FilterInstallmentsResponse>> FilterInstallments(FilterInstallmentsRequest filterInstallmentsRequest);
+        Task<PaginatedList<GetDebtByIdResponse>> FilterDebtsById(FilterDebtRequest filterDebtRequest);
+        Task<PaginatedList<FilterInstallmentsResponse>> FilterInstallments(FilterInstallmentsRequest filterInstallmentsRequest);
         Task PutInstallments(PutInstallmentsRequest putInstallmentsRequest);
         Task<List<GetSumbyMonthResponse>> GetSumByMonth(GetSumByMonthRequest getSumByMonthRequest);
     }
@@ -32,17 +33,20 @@ namespace MicroServices.WebDebts.Application.Services
 
         private readonly IWalletRepository _walletRepository;
 
-        public DebtsApplicationService(IDebtsService debtsServices, IUnitOfWork unitOfWork, IDebtRepository debtRepository, IWalletRepository walletRepository)
+        private readonly ICardRepository _cardRepository;
+
+        public DebtsApplicationService(IDebtsService debtsServices, IUnitOfWork unitOfWork, IDebtRepository debtRepository, IWalletRepository walletRepository, ICardRepository cardRepository)
         {
             _debtsServices = debtsServices;
             _debtRepository = debtRepository;
             _unitOfWork = unitOfWork;
             _walletRepository = walletRepository;
+            _cardRepository = cardRepository;
         }
 
-        public async Task<GenericResponse> CreateDebt(DebtsAppModel createDebtsRequest)
+        public async Task<GenericResponse> CreateDebt(CreateDebtAppModel createDebtsRequest)
         {
-            var debt = createDebtsRequest.ToEntity();
+            var debt = createDebtsRequest.ToCreateModel();
             
             await _debtsServices.CreateDebtAsync(debt, DebtType.Simple);
             await _unitOfWork.CommitAsync();
@@ -56,31 +60,53 @@ namespace MicroServices.WebDebts.Application.Services
             await _unitOfWork.CommitAsync();
         }
 
-        public async Task<List<GetDebtByIdResponse>> FilterDebtsById(FilterDebtRequest filterDebtRequest)
+        public async Task<PaginatedList<GetDebtByIdResponse>> FilterDebtsById(FilterDebtRequest filterDebtRequest)
         {
-            var debt = await _debtsServices.FilterDebtsAsync(filterDebtRequest.Name, 
+            var debt = await _debtsServices.FilterDebtsAsync(filterDebtRequest.PageNumber,
+                                                             filterDebtRequest.Name, 
                                                              filterDebtRequest.Value, 
                                                              filterDebtRequest.StartDate,
                                                              filterDebtRequest.FInishDate,
                                                              (DebtInstallmentType?)filterDebtRequest.DebtInstallmentType, 
                                                              (DebtType?)filterDebtRequest.DebtType);
 
-            var debtAppResult = debt.Select(x => x.ToResponseModel()).ToList();
 
-            return debtAppResult;
+            var debtAppResult = debt.Items.Select(x => x.ToResponseModel()).ToList();
+
+            return new PaginatedList<GetDebtByIdResponse>
+            {
+                CurrentPage = debt.CurrentPage,
+                Items = debtAppResult,
+                TotalItems = debt.TotalItems,
+                TotalPages = debt.TotalPages
+            };
         }
 
-        public async Task<List<FilterInstallmentsResponse>> FilterInstallments(FilterInstallmentsRequest filterInstallmentsRequest)
+        public async Task<PaginatedList<FilterInstallmentsResponse>> FilterInstallments(FilterInstallmentsRequest filterInstallmentsRequest)
         {
-            var debts = await _debtRepository.FilterInstallmentsAsync(filterInstallmentsRequest.DebtId, 
+            var debts = await _debtRepository.FilterInstallmentsAsync(filterInstallmentsRequest.PageNumber,
+                                                                      filterInstallmentsRequest.DebtId, 
                                                                       filterInstallmentsRequest.Month, 
                                                                       filterInstallmentsRequest.Year, 
                                                                       (DebtInstallmentType?)filterInstallmentsRequest.DebtInstallmentType,
                                                                       (Status?)filterInstallmentsRequest.StatusApp);
 
-            var installmentsApp = debts.Select( x => x.ToResponse()).OrderBy(x => x.Date);
+            var installmentsApp = debts.Items.Select( x => new FilterInstallmentsResponse { 
+                                                                            Date = x.Date, 
+                                                                            DebtName = x.Debt.Name,
+                                                                            Id = x.Id,
+                                                                            InstallmentNumber = x.InstallmentNumber,
+                                                                            PaymentDate = x.PaymentDate,
+                                                                            Status = (EnumAppModel.StatusApp)x.Status,
+                                                                            Value = x.Value}).OrderBy(x => x.Date);
 
-            return installmentsApp.ToList();
+            return new PaginatedList<FilterInstallmentsResponse>
+            {
+                Items = installmentsApp.ToList(),
+                CurrentPage = debts.CurrentPage,
+                TotalItems = debts.TotalItems,
+                TotalPages = debts.TotalPages
+            };
         }
 
         public async Task<GetDebtByIdResponse> GetDebtsById(Guid id)
@@ -170,7 +196,24 @@ namespace MicroServices.WebDebts.Application.Services
 
         public async Task PutInstallments(PutInstallmentsRequest putInstallmentsRequest)
         {
-            await _debtRepository.UpdateInstallmentAsync(putInstallmentsRequest.Id, putInstallmentsRequest.InstallmentsStatus);
+            if (putInstallmentsRequest.InstallmentsStatus == Status.Paid)
+            {
+                var installment = await _debtRepository.GetInstallmentById(putInstallmentsRequest.Id);
+                var walletId = await _walletRepository.SubtractWalletMonthControllers(putInstallmentsRequest.WalletId.Value,
+                                                                       putInstallmentsRequest.PaymentDate.Value.Month,
+                                                                       putInstallmentsRequest.PaymentDate.Value.Year,
+                                                                       installment.Value);
+                await _debtRepository.UpdateInstallmentAsync(putInstallmentsRequest.Id, putInstallmentsRequest.InstallmentsStatus, putInstallmentsRequest.PaymentDate, walletId);
+            }
+            else
+            {
+                var installment = await _debtRepository.GetInstallmentById(putInstallmentsRequest.Id);
+                await _walletRepository.AddWalletMonthControllers(installment.WalletMonthControllerId.Value,
+                                                                  installment.Value);
+                await _debtRepository.UpdateInstallmentAsync(putInstallmentsRequest.Id, putInstallmentsRequest.InstallmentsStatus, putInstallmentsRequest.PaymentDate, null);
+            }
+            
+            
             await _unitOfWork.CommitAsync();
         }
     }

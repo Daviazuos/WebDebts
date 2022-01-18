@@ -25,7 +25,7 @@ namespace MicroServices.WebDebts.Api.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<GenericResponse>> CreateSimpleAsync([FromBody] DebtsAppModel createDebtsRequest)
+        public async Task<ActionResult<GenericResponse>> CreateSimpleAsync([FromBody] CreateDebtAppModel createDebtsRequest)
         {
             var debt = await _debtsApplicationService.CreateDebt(createDebtsRequest);
 

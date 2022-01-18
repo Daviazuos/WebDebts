@@ -3,15 +3,17 @@ using System;
 using MicroServices.WebDebts.Infrastructure.Database.Postgres;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace MicroServices.WebDebts.Infrastructure.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220110114627_installmentDebt")]
+    partial class installmentDebt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -109,9 +111,6 @@ namespace MicroServices.WebDebts.Infrastructure.Migrations
                     b.Property<decimal>("Value")
                         .HasColumnType("numeric");
 
-                    b.Property<Guid?>("WalletMonthControllerId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
                     b.HasIndex("DebtId");
@@ -151,34 +150,6 @@ namespace MicroServices.WebDebts.Infrastructure.Migrations
                     b.ToTable("Wallet");
                 });
 
-            modelBuilder.Entity("MicroServices.WebDebts.Domain.Models.WalletMonthController", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<int>("Month")
-                        .HasColumnType("integer");
-
-                    b.Property<decimal>("UpdatedValue")
-                        .HasColumnType("numeric");
-
-                    b.Property<Guid?>("WalletId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("WalletId");
-
-                    b.ToTable("WalletMonthControllers");
-                });
-
             modelBuilder.Entity("MicroServices.WebDebts.Domain.Models.Debt", b =>
                 {
                     b.HasOne("MicroServices.WebDebts.Domain.Models.Card", "Card")
@@ -191,13 +162,6 @@ namespace MicroServices.WebDebts.Infrastructure.Migrations
                     b.HasOne("MicroServices.WebDebts.Domain.Models.Debt", "Debt")
                         .WithMany("Installments")
                         .HasForeignKey("DebtId");
-                });
-
-            modelBuilder.Entity("MicroServices.WebDebts.Domain.Models.WalletMonthController", b =>
-                {
-                    b.HasOne("MicroServices.WebDebts.Domain.Models.Wallet", "Wallet")
-                        .WithMany("WalletMonthControllers")
-                        .HasForeignKey("WalletId");
                 });
 #pragma warning restore 612, 618
         }

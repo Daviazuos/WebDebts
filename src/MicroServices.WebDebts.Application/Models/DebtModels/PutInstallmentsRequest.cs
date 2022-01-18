@@ -7,5 +7,7 @@ namespace MicroServices.WebDebts.Application.Models
     {
         public Guid Id { get; set; }
         public Status InstallmentsStatus { get; set; }
+        public DateTime? PaymentDate { get; set; }
+        public Guid? WalletId { get; set; }
     }
 }

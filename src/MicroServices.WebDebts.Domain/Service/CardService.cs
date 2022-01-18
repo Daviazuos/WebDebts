@@ -1,6 +1,8 @@
 ﻿using MicroServices.WebDebts.Domain.Interfaces.Repository;
 using MicroServices.WebDebts.Domain.Models;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MicroServices.WebDebts.Domain.Service
@@ -10,7 +12,7 @@ namespace MicroServices.WebDebts.Domain.Service
         Task<Guid> CreateCardAsync(Card card);
         Task<Debt> LinkCard(Debt debt, Guid Id);
         Task<Card> GetAllByIdAsync(Guid id);
-        Task<Card> GetAllCardValuesByIdAsync(Guid id);
+        Task<List<Card>> FilterCardsAsync(Guid? id, int? month, int? year);
     }
     public class CardService : ICardService
     {
@@ -31,12 +33,25 @@ namespace MicroServices.WebDebts.Domain.Service
 
         public async Task<Card> GetAllByIdAsync(Guid id)
         {
-            return await _cardRepository.FindByIdAsync(id);
+            return await _cardRepository.GetCardById(id);
         }
 
-        public async Task<Card> GetAllCardValuesByIdAsync(Guid id)
+        public async Task<List<Card>> FilterCardsAsync(Guid? id, int? month, int? year)
         {
-            return await _cardRepository.FindCardValuesByIdAsync(id);
+            var cards = await _cardRepository.FindCardValuesByIdAsync(id);
+
+            if (month != null && year != null)
+            {
+                foreach (var debtList in cards.Select(x => x.DebtValues))
+                {
+                    foreach (var debt in debtList)
+                    {
+                        debt.Installments = debt.Installments.Where(x => x.Date.Month == month.Value && x.Date.Year == year).ToList();
+                    }
+                }
+            }
+
+            return cards;
         }
 
         public async Task<Debt> LinkCard(Debt debt, Guid Id)

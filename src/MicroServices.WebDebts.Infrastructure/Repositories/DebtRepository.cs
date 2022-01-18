@@ -1,5 +1,6 @@
 ﻿using MicroServices.WebDebts.Domain.Interfaces.Repository;
 using MicroServices.WebDebts.Domain.Models;
+using MicroServices.WebDebts.Domain.Models.Commom;
 using MicroServices.WebDebts.Domain.Models.Enum;
 using MicroServices.WebDebts.Infrastructure.Database.Postgres;
 using Microsoft.EntityFrameworkCore;
@@ -33,27 +34,49 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             _dbSetInstallment.RemoveRange(debtToRemove.SelectMany(x => x.Installments));
         }
 
-        public async Task<List<Debt>> FindDebtAsync(string name, decimal? value, DateTime? startDate, DateTime? finishDate, DebtInstallmentType? debtInstallmentType, DebtType? debtType)
+        public async Task<PaginatedList<Debt>> FindDebtAsync(int pageNumber, string name, decimal? value, DateTime? startDate, DateTime? finishDate, DebtInstallmentType? debtInstallmentType, DebtType? debtType)
         {
-            var query = _dbSet.Include(x => x.Installments);
+            var query = _dbSet.Include(x => x.Installments).Where(x => x.Card == null);
 
-            var queryFilter = await DebtsFilters(query, name, value, startDate, finishDate, debtInstallmentType, debtType).ToListAsync();
+            var resultQuery = DebtsFilters(query, name, value, startDate, finishDate, debtInstallmentType, debtType);
+
+            var skipNumber = pageNumber > 0 ? ((pageNumber - 1) * 15) : 0;
+            var totalItems = resultQuery.Count();
+            var totalPages = Convert.ToInt32(totalItems / 15 + (totalItems % 15 > 0 ? 1 : 0));
+
+            var resultFilter = await resultQuery.Skip(skipNumber)
+                                                .Take(15)
+                                                .ToListAsync();
 
             var result = new List<Debt>();
 
+            
+
             if (startDate.HasValue || finishDate.HasValue)
             {
-                foreach (var debt in queryFilter)
+                foreach (var debt in resultFilter)
                 {
                     var instalments = debt.Installments.Where(x => x.Date >= startDate && x.Date <= finishDate).ToList();
                     debt.Installments = instalments;
                     result.Add(debt);
                 }
+
+                return new PaginatedList<Debt>
+                {
+                    CurrentPage = pageNumber,
+                    Items = result,
+                    TotalItems = totalItems,
+                    TotalPages = totalPages
+                };
             }
             else
-                return queryFilter; 
-
-            return result;
+                return new PaginatedList<Debt>
+                {
+                    CurrentPage = pageNumber,
+                    Items = resultFilter,
+                    TotalItems = totalItems,
+                    TotalPages = totalPages
+                };
         }
 
         public async Task<Debt> GetAllByIdAsync(Guid Id)
@@ -94,19 +117,33 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             return resultQuery;
         }
 
-        public async Task<List<Installments>> FilterInstallmentsAsync(Guid? debtId, int? month, int? year, DebtInstallmentType? debtInstallmentType, Status? status)
+        public async Task<PaginatedList<Installments>> FilterInstallmentsAsync(int pageNumber, Guid? debtId, int? month, int? year, DebtInstallmentType? debtInstallmentType, Status? status)
         {
-            var installments = _context.Debt.Include(x => x.Installments).SelectMany(x => x.Installments).AsQueryable();
+            var installments = _context.Installments.Include(x => x.Debt).AsQueryable();
 
             if (debtId.HasValue)
-                installments = _context.Debt.Include(x => x.Installments).Where(x => x.Id == debtId.Value).SelectMany(x => x.Installments).AsQueryable();
+                installments = installments.Where(x => x.Debt.Id == debtId.Value).AsQueryable();
             
             if (debtInstallmentType.HasValue)
-                installments = _context.Debt.Include(x => x.Installments).Where(x => x.DebtInstallmentType == debtInstallmentType.Value).SelectMany(x => x.Installments).AsQueryable();
+                installments = installments.Where(x => x.Debt.DebtInstallmentType == debtInstallmentType.Value);
             
-            var resultFilter = InstallmentsFilters(installments, month, year, status);
+            var resultQuery = InstallmentsFilters(installments, month, year, status);
 
-            return await resultFilter.ToListAsync();
+            var skipNumber = pageNumber > 0 ? ((pageNumber - 1) * 15) : 0;
+            var totalItems = resultQuery.Count();
+            var totalPages = Convert.ToInt32(totalItems / 15 + (totalItems % 15 > 0 ? 1 : 0));
+
+            var resultFilter = await resultQuery.Skip(skipNumber)
+                                                .Take(15)
+                                                .ToListAsync();
+
+            return new PaginatedList<Installments>
+            {
+                CurrentPage = pageNumber,
+                Items = resultFilter,
+                TotalItems = totalItems,
+                TotalPages = totalPages
+            };
         }
 
         private static IQueryable<Installments> InstallmentsFilters(IQueryable<Installments> resultQuery, int? month, int? year, Status? status)
@@ -127,14 +164,20 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             return resultQuery;
         }
 
-        public async Task UpdateInstallmentAsync(Guid id, Status status)
+        public async Task UpdateInstallmentAsync(Guid id, Status status, DateTime? paymentDate, Guid? walletId)
         {
             var installment = await _context.Debt.SelectMany(x => x.Installments.Where(x => x.Id == id)).FirstOrDefaultAsync();
 
             installment.Status = status;
 
             if (status == Status.Paid)
-                installment.PaymentDate = DateTime.Now;
+            {
+                installment.PaymentDate = paymentDate.Value;
+                if (walletId.HasValue)
+                {
+                    installment.WalletMonthControllerId = walletId.Value;
+                }
+            }
             else
                 installment.PaymentDate = null;
         }
@@ -150,6 +193,12 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             installments = installments.Where(x => x.Date <= finishDate.Date);
 
             return await installments.ToListAsync();
+        }
+
+        public async Task<Installments> GetInstallmentById(Guid installmentId)
+        {
+            var installment = await _context.Debt.SelectMany(x => x.Installments.Where(x => x.Id == installmentId)).FirstOrDefaultAsync();
+            return installment;
         }
     }
 }

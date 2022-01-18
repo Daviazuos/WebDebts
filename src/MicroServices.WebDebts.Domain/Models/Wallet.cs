@@ -1,5 +1,6 @@
 ﻿using MicroServices.WebDebts.Domain.Models.Enum;
 using System;
+using System.Collections.Generic;
 
 namespace MicroServices.WebDebts.Domain.Models
 {
@@ -11,5 +12,14 @@ namespace MicroServices.WebDebts.Domain.Models
         public WalletStatus WalletStatus {  get; set; }
         public DateTime StartAt {  get; set; }
         public DateTime? FinishAt {  get; set; }
+        public List<WalletMonthController> WalletMonthControllers { get; set; }
+    }
+
+    public class WalletMonthController : ModelBase
+    {
+        public int Month { get; set; }
+        public int Year { get; set; }
+        public decimal UpdatedValue { get; set; }
+        public Wallet Wallet { get; set; }
     }
 }

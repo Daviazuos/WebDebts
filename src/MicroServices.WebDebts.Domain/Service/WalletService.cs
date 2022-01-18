@@ -1,5 +1,6 @@
 ﻿using MicroServices.WebDebts.Domain.Interfaces.Repository;
 using MicroServices.WebDebts.Domain.Models;
+using MicroServices.WebDebts.Domain.Models.Enum;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ namespace MicroServices.WebDebts.Domain.Service
         Task<Guid> CreateWalletAsync(Wallet wallet);
         Task<Wallet> GetWalletByIdAsync(Guid id);
         Task<Wallet> UpdateWalletAsync(Wallet wallet);
-        Task<List<Wallet>> GetWalletAsync();
+        Task<List<Wallet>> GetWalletAsync(WalletStatus walletStatus);
         Task DeleteWalletAsync(Guid id);
     }
     public class WalletService : IWalletService
@@ -36,9 +37,9 @@ namespace MicroServices.WebDebts.Domain.Service
             await _walletRepository.Remove(wallet);
         }
 
-        public async Task<List<Wallet>> GetWalletAsync()
+        public async Task<List<Wallet>> GetWalletAsync(WalletStatus walletStatus)
         {
-            return await _walletRepository.GetEnableWallet();
+            return await _walletRepository.GetWallets(walletStatus);
         }
 
         public async Task<Wallet> GetWalletByIdAsync(Guid id)

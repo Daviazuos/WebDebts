@@ -5,6 +5,7 @@ namespace MicroServices.WebDebts.Application.Models
 {
     public class FilterInstallmentsRequest
     {
+        public int PageNumber { get; set; }
         public Guid? DebtId { get; set; }
         public DebtInstallmentTypeApp? DebtInstallmentType { get; set; }
         public StatusApp? StatusApp { get; set; }

@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MicroServices.WebDebts.Domain.Models.Enum;
 
 namespace MicroServices.WebDebts.Application.Service
 {
@@ -15,7 +16,7 @@ namespace MicroServices.WebDebts.Application.Service
         Task<GenericResponse> CreateWallet(WalletAppModel walletAppModel);
         Task<GetWalletByIdResponse> GetWalletById(Guid id);
         Task<GenericResponse> UpdateWallet(Guid id, WalletAppModel walletAppModel);
-        Task<IEnumerable<GetWalletByIdResponse>> GetEnableWallet();
+        Task<IEnumerable<GetWalletByIdResponse>> GetWallets(WalletStatus walletStatus);
         Task DeleteWallet(Guid id);
     }
     public class WalletApplicationService : IWalletApplicationService
@@ -82,9 +83,9 @@ namespace MicroServices.WebDebts.Application.Service
             return walletAppResult;
         }
 
-        public async Task<IEnumerable<GetWalletByIdResponse>> GetEnableWallet()
+        public async Task<IEnumerable<GetWalletByIdResponse>> GetWallets(WalletStatus walletStatus)
         {
-            var wallets = await _walletService.GetWalletAsync();
+            var wallets = await _walletService.GetWalletAsync(walletStatus);
             var walletAppResult = wallets.Select(x => x.ToResponseModel());
 
             return walletAppResult;

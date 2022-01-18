@@ -1,6 +1,7 @@
 ﻿using MicroServices.WebDebts.Domain.Common;
 using MicroServices.WebDebts.Domain.Interfaces.Repository;
 using MicroServices.WebDebts.Domain.Models;
+using MicroServices.WebDebts.Domain.Models.Commom;
 using MicroServices.WebDebts.Domain.Models.Enum;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,8 @@ namespace MicroServices.WebDebts.Domain.Services
         Task CreateDebtAsync(Debt debt, DebtType debtType);
         Task<Debt> GetAllByIdAsync(Guid id);
 
-        Task<List<Debt>> FilterDebtsAsync(string name, 
+        Task<PaginatedList<Debt>> FilterDebtsAsync(int pageNumber,
+                                         string name, 
                                          decimal? value, 
                                          DateTime? startDate, 
                                          DateTime? finishDate, 
@@ -66,9 +68,9 @@ namespace MicroServices.WebDebts.Domain.Services
             await _debtRepository.DeleteDebt(id);
         }
 
-        public async Task<List<Debt>> FilterDebtsAsync(string name, decimal? value, DateTime? startDate, DateTime? finishDate, DebtInstallmentType? debtInstallmentType, DebtType? debtType)
+        public async Task<PaginatedList<Debt>> FilterDebtsAsync(int pageNumer, string name, decimal? value, DateTime? startDate, DateTime? finishDate, DebtInstallmentType? debtInstallmentType, DebtType? debtType)
         {
-            return await _debtRepository.FindDebtAsync(name, value, startDate, finishDate, debtInstallmentType, debtType);
+            return await _debtRepository.FindDebtAsync(pageNumer, name, value, startDate, finishDate, debtInstallmentType, debtType);
         }
 
         public async Task<Debt> GetAllByIdAsync(Guid id)

@@ -9,5 +9,6 @@ namespace MicroServices.WebDebts.Application.Models
         public string Name { get; set; }
         public decimal Value { get; set; }
         public WalletStatus WalletStatus { get; set; }
+        public int UpdatedValue { get; set; }
     }
 }
