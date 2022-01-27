@@ -70,6 +70,7 @@ namespace MicroServices.WebDebts.Application.Services
         public async Task<PaginatedList<GetDebtByIdResponse>> FilterDebtsById(FilterDebtRequest filterDebtRequest, Guid userId)
         {
             var debt = await _debtsServices.FilterDebtsAsync(filterDebtRequest.PageNumber,
+                                                             filterDebtRequest.PageSize,
                                                              filterDebtRequest.Name, 
                                                              filterDebtRequest.Value, 
                                                              filterDebtRequest.StartDate,

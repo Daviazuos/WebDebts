@@ -37,7 +37,7 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             _dbSetInstallment.RemoveRange(debtToRemove.SelectMany(x => x.Installments));
         }
 
-        public async Task<PaginatedList<Debt>> FindDebtAsync(int pageNumber, string name, decimal? value, DateTime? startDate, DateTime? finishDate, DebtInstallmentType? debtInstallmentType, DebtType? debtType, Guid userId)
+        public async Task<PaginatedList<Debt>> FindDebtAsync(int pageNumber,  int pageSize, string name, decimal? value, DateTime? startDate, DateTime? finishDate, DebtInstallmentType? debtInstallmentType, DebtType? debtType, Guid userId)
         {
             var query = _dbSet.Include(x => x.Installments);
 
@@ -45,13 +45,13 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
 
             resultQuery = resultQuery.Where(x => x.User.Id == userId);
 
-            var skipNumber = pageNumber > 0 ? ((pageNumber - 1) * 15) : 0;
+            var skipNumber = pageNumber > 0 ? ((pageNumber - 1) * pageSize) : 0;
             var totalItems = resultQuery.Count();
-            var totalPages = Convert.ToInt32(totalItems / 15 + (totalItems % 15 > 0 ? 1 : 0));
+            var totalPages = Convert.ToInt32(totalItems / pageSize + (totalItems % pageSize > 0 ? 1 : 0));
 
             var resultFilter = await resultQuery.OrderBy(x => x.Date)
                                                 .Skip(skipNumber)
-                                                .Take(15)
+                                                .Take(pageSize)
                                                 .ToListAsync();
 
             var result = new List<Debt>();
@@ -200,7 +200,7 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
         public async Task<List<Installments>> GetSumPerMonthAsync(int? month, int? year, Guid userId)
         {
             var startDate = new DateTime(year.Value, month.Value, 1, 0, 0, 0);
-            var finishDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 31);
+            var finishDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.AddMonths(2).Month, 31);
 
 
             var installments = _context.Debt.Include(x => x.Installments).SelectMany(x => x.Installments).AsQueryable();

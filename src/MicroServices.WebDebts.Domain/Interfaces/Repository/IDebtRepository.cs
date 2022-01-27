@@ -11,7 +11,7 @@ namespace MicroServices.WebDebts.Domain.Interfaces.Repository
     {
         Task<Debt> GetAllByIdAsync(Guid Id);
         Task DeleteDebt(Guid Id);
-        Task<PaginatedList<Debt>> FindDebtAsync(int pageNumber, string name, decimal? value, DateTime? startDate, DateTime? finishDate, DebtInstallmentType? debtInstallmentType, DebtType? debtType, Guid userId);
+        Task<PaginatedList<Debt>> FindDebtAsync(int pageNumber, int pageSize, string name, decimal? value, DateTime? startDate, DateTime? finishDate, DebtInstallmentType? debtInstallmentType, DebtType? debtType, Guid userId);
         Task<PaginatedList<Installments>> FilterInstallmentsAsync(int pageNumber, int pageSize, Guid? debtId, int? month, int? year, DebtInstallmentType? debtInstallmentType, Status? status, DebtType? debtType, Guid userId);
         Task UpdateInstallmentAsync(Guid id, Status status, DateTime? paymentDate, Guid? walletId);
         Task<List<Installments>> GetSumPerMonthAsync(int? month, int? year, Guid userId);

@@ -16,13 +16,14 @@ namespace MicroServices.WebDebts.Domain.Services
         Task<Debt> GetAllByIdAsync(Guid id);
 
         Task<PaginatedList<Debt>> FilterDebtsAsync(int pageNumber,
-                                         string name, 
-                                         decimal? value, 
-                                         DateTime? startDate, 
-                                         DateTime? finishDate, 
-                                         DebtInstallmentType? debtInstallmentType, 
-                                         DebtType? debtType,
-                                         Guid userId);
+                                                   int pageSize,           
+                                                   string name, 
+                                                   decimal? value, 
+                                                   DateTime? startDate, 
+                                                   DateTime? finishDate, 
+                                                   DebtInstallmentType? debtInstallmentType, 
+                                                   DebtType? debtType,
+                                                   Guid userId);
         Task DeleteDebt(Guid id);
     }
 
@@ -73,9 +74,9 @@ namespace MicroServices.WebDebts.Domain.Services
             await _debtRepository.DeleteDebt(id);
         }
 
-        public async Task<PaginatedList<Debt>> FilterDebtsAsync(int pageNumer, string name, decimal? value, DateTime? startDate, DateTime? finishDate, DebtInstallmentType? debtInstallmentType, DebtType? debtType, Guid userId)
+        public async Task<PaginatedList<Debt>> FilterDebtsAsync(int pageNumer, int pageSize, string name, decimal? value, DateTime? startDate, DateTime? finishDate, DebtInstallmentType? debtInstallmentType, DebtType? debtType, Guid userId)
         {
-            return await _debtRepository.FindDebtAsync(pageNumer, name, value, startDate, finishDate, debtInstallmentType, debtType, userId);
+            return await _debtRepository.FindDebtAsync(pageNumer, pageSize, name, value, startDate, finishDate, debtInstallmentType, debtType, userId);
         }
 
         public async Task<Debt> GetAllByIdAsync(Guid id)
