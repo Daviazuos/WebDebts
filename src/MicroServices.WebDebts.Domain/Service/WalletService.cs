@@ -12,7 +12,6 @@ namespace MicroServices.WebDebts.Domain.Service
         Task<Guid> CreateWalletAsync(Wallet wallet);
         Task<Wallet> GetWalletByIdAsync(Guid id);
         Task<Wallet> UpdateWalletAsync(Wallet wallet);
-        Task<List<Wallet>> GetWalletAsync(WalletStatus walletStatus, Guid userId);
         Task DeleteWalletAsync(Guid id);
     }
     public class WalletService : IWalletService
@@ -35,11 +34,6 @@ namespace MicroServices.WebDebts.Domain.Service
         {
             var wallet = await _walletRepository.FindByIdAsync(id);
             await _walletRepository.Remove(wallet);
-        }
-
-        public async Task<List<Wallet>> GetWalletAsync(WalletStatus walletStatus, Guid userId)
-        {
-            return await _walletRepository.GetWallets(walletStatus, userId);
         }
 
         public async Task<Wallet> GetWalletByIdAsync(Guid id)

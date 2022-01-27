@@ -23,12 +23,10 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<List<Wallet>> GetWallets(WalletStatus walletStatus, Guid userId)
+        public async Task<List<Wallet>> GetWallets(WalletStatus walletStatus, int month, int year, Guid userId)
         {
-            var actualDate = DateTime.Now;
-
             var resultQuery = await _dbSet.Where(x => x.FinishAt == null && x.WalletStatus == walletStatus && x.User.Id == userId)
-                                          .Include(x => x.WalletMonthControllers.Where(x => x.Month == actualDate.Month && x.Year == actualDate.Year)).ToListAsync();
+                                          .Include(x => x.WalletMonthControllers.Where(x => x.Month == month && x.Year == year)).ToListAsync();
 
 
             return resultQuery;

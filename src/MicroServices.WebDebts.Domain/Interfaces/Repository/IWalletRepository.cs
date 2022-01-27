@@ -8,7 +8,7 @@ namespace MicroServices.WebDebts.Domain.Interfaces.Repository
 {
     public interface IWalletRepository : IBaseRepository<Wallet>
     {
-        Task<List<Wallet>> GetWallets(WalletStatus walletStatus, Guid userId);
+        Task<List<Wallet>> GetWallets(WalletStatus walletStatus, int month, int year, Guid userId);
         Task<List<Wallet>> GetWalletByMonth(int? month, int? year, Guid userId);
         Task<Guid> SubtractWalletMonthControllers(Guid walletId, int month, int year, decimal value);
         Task<Guid> AddWalletMonthControllers(Guid walletMonthId, decimal value);

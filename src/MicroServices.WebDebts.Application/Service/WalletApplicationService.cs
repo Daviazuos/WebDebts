@@ -16,20 +16,22 @@ namespace MicroServices.WebDebts.Application.Service
         Task<GenericResponse> CreateWallet(WalletAppModel walletAppModel, Guid userId);
         Task<GetWalletByIdResponse> GetWalletById(Guid id);
         Task<GenericResponse> UpdateWallet(Guid id, WalletAppModel walletAppModel);
-        Task<IEnumerable<GetWalletByIdResponse>> GetWallets(WalletStatus walletStatus, Guid userId);
+        Task<IEnumerable<GetWalletByIdResponse>> GetWallets(WalletStatus walletStatus, int month, int year, Guid userId);
         Task DeleteWallet(Guid id);
     }
     public class WalletApplicationService : IWalletApplicationService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IWalletService _walletService;
+        private readonly IWalletRepository _walletRepository;
         private readonly IUserRepository _userRepository;
         
-        public WalletApplicationService(IUnitOfWork unitOfWork, IWalletService walletService, IUserRepository userRepository)
+        public WalletApplicationService(IUnitOfWork unitOfWork, IWalletService walletService, IUserRepository userRepository, IWalletRepository walletRepository)
         {
             _unitOfWork = unitOfWork;
             _walletService = walletService;
             _userRepository = userRepository;
+            _walletRepository = walletRepository;
         }
 
         public async Task<GenericResponse> CreateWallet(WalletAppModel walletAppModel, Guid userId)
@@ -88,9 +90,9 @@ namespace MicroServices.WebDebts.Application.Service
             return walletAppResult;
         }
 
-        public async Task<IEnumerable<GetWalletByIdResponse>> GetWallets(WalletStatus walletStatus, Guid userId)
+        public async Task<IEnumerable<GetWalletByIdResponse>> GetWallets(WalletStatus walletStatus, int month, int year, Guid userId)
         {
-            var wallets = await _walletService.GetWalletAsync(walletStatus, userId);
+            var wallets = await _walletRepository.GetWallets(walletStatus, month, year, userId);
             var walletAppResult = wallets.Select(x => x.ToResponseModel());
 
             return walletAppResult;

@@ -57,11 +57,11 @@ namespace MicroServices.WebDebts.Api.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<GetWalletByIdResponse>> GetWallets(WalletStatus walletStatus)
+        public async Task<ActionResult<GetWalletByIdResponse>> GetWallets(WalletStatus walletStatus, int month, int year)
         {
             var _userId = Guid.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Sid));
 
-            var wallet = await _walletApplicationService.GetWallets(walletStatus, _userId);
+            var wallet = await _walletApplicationService.GetWallets(walletStatus, month, year, _userId);
 
             return new OkObjectResult(wallet);
         }
