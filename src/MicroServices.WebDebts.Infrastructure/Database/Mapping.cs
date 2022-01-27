@@ -15,14 +15,23 @@ namespace MicroServices.WebDebts.Infrastructure.Database
 
             modelBuilder.Entity<Card>().HasKey(k => k.Id);
 
-            modelBuilder.Entity<Card>()
-                .HasMany(d => d.DebtValues);
+            modelBuilder.Entity<Card>().HasMany(d => d.DebtValues);
 
             modelBuilder.Entity<Wallet>().HasKey(k => k.Id);
 
             modelBuilder.Entity<Wallet>().HasMany(d => d.WalletMonthControllers);
 
             modelBuilder.Entity<WalletMonthController>().HasOne(d => d.Wallet);
+
+            modelBuilder.Entity<Debt>().HasOne(x => x.User);
+
+            modelBuilder.Entity<Installments>().HasOne(x => x.User);
+
+            modelBuilder.Entity<Card>().HasOne(x => x.User);
+
+            modelBuilder.Entity<Wallet>().HasOne(x => x.User);
+
+            modelBuilder.Entity<WalletMonthController>().HasOne(x => x.User);
         }
     }
 }

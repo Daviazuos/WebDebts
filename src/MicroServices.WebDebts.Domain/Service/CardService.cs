@@ -12,7 +12,7 @@ namespace MicroServices.WebDebts.Domain.Service
         Task<Guid> CreateCardAsync(Card card);
         Task<Debt> LinkCard(Debt debt, Guid Id);
         Task<Card> GetAllByIdAsync(Guid id);
-        Task<List<Card>> FilterCardsAsync(Guid? id, int? month, int? year);
+        Task<List<Card>> FilterCardsAsync(Guid? id, int? month, int? year, Guid userId);
     }
     public class CardService : ICardService
     {
@@ -21,6 +21,7 @@ namespace MicroServices.WebDebts.Domain.Service
         {
             _cardRepository = cardRepository;
         }
+
         public async Task<Guid> CreateCardAsync(Card card)
         {
             card.Id = Guid.NewGuid();
@@ -36,9 +37,9 @@ namespace MicroServices.WebDebts.Domain.Service
             return await _cardRepository.GetCardById(id);
         }
 
-        public async Task<List<Card>> FilterCardsAsync(Guid? id, int? month, int? year)
+        public async Task<List<Card>> FilterCardsAsync(Guid? id, int? month, int? year, Guid userId)
         {
-            var cards = await _cardRepository.FindCardValuesByIdAsync(id);
+            var cards = await _cardRepository.FindCardValuesByIdAsync(id, userId);
 
             if (month != null && year != null)
             {

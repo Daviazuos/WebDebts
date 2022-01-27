@@ -2,10 +2,12 @@
 using MicroServices.WebDebts.Domain.Models;
 using MicroServices.WebDebts.Domain.Models.Enum;
 using MicroServices.WebDebts.Infrastructure.Database.Postgres;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace MicroServices.WebDebts.Infrastructure.Repositories
@@ -21,46 +23,37 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<List<Wallet>> GetWallets(WalletStatus walletStatus)
+        public async Task<List<Wallet>> GetWallets(WalletStatus walletStatus, Guid userId)
         {
             var actualDate = DateTime.Now;
 
-            var resultQuery = await _dbSet.Where(x => x.FinishAt == null && x.WalletStatus == walletStatus)
+            var resultQuery = await _dbSet.Where(x => x.FinishAt == null && x.WalletStatus == walletStatus && x.User.Id == userId)
                                           .Include(x => x.WalletMonthControllers.Where(x => x.Month == actualDate.Month && x.Year == actualDate.Year)).ToListAsync();
 
 
             return resultQuery;
         }
 
-        public async Task<List<Wallet>> GetWalletByMonth(int? month, int? year)
+        public async Task<List<Wallet>> GetWalletByMonth(int? month, int? year, Guid userId)
         {
             var startDate = new DateTime(year.Value, month.Value, 1, 0, 0, 0);
             var finishDate = DateTime.UtcNow.Date;
 
-            var resultQuery = _dbSet.Where(x => x.WalletStatus == WalletStatus.Enable);
+            var resultQuery = _dbSet.Where(x => x.WalletStatus == WalletStatus.Enable && x.User.Id == userId);
 
             return await resultQuery.ToListAsync();
         }
 
         public async Task<Guid> SubtractWalletMonthControllers(Guid walletId, int month, int year, decimal value)
         {
-            var wallet = await _dbSet.Where(x => x.Id == walletId).FirstOrDefaultAsync();
+            var wallet = await _dbSet.Where(x => x.Id == walletId).Include(x => x.WalletMonthControllers).FirstOrDefaultAsync();
 
-            if (wallet.WalletMonthControllers != null)
+            if (wallet.WalletMonthControllers.Count > 0)
             {
-                var walletControllers = wallet.WalletMonthControllers.Where(x => x.Month == month).FirstOrDefault();
+                var walletControllers = wallet.WalletMonthControllers.Where(x => x.Month == month && x.Year == year).FirstOrDefault();
 
-                var walletMonthControlerModel = new WalletMonthController
-                {
-                    CreatedAt = walletControllers.CreatedAt,
-                    Month = month,
-                    Year = year,    
-                    UpdatedValue = walletControllers.UpdatedValue - value,
-                    Id = walletControllers.Id,
-                    Wallet = wallet
-                };
-
-                walletControllers = walletMonthControlerModel;
+                walletControllers.UpdatedValue = walletControllers.UpdatedValue - value;
+                
                 _context.WalletMonthControllers.Update(walletControllers);
                 return walletControllers.Id;
             }
@@ -84,7 +77,6 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
 
         public async Task<Guid> AddWalletMonthControllers(Guid walletMonthId, decimal value)
         {
-
             var walletControllers = _context.WalletMonthControllers.Where(x => x.Id == walletMonthId).FirstOrDefault();
 
             walletControllers.UpdatedValue = walletControllers.UpdatedValue + value;

@@ -12,7 +12,7 @@ namespace MicroServices.WebDebts.Domain.Services
 {
     public interface IDebtsService
     {
-        Task CreateDebtAsync(Debt debt, DebtType debtType);
+        Task CreateDebtAsync(Debt debt, DebtType debtType, Guid userId);
         Task<Debt> GetAllByIdAsync(Guid id);
 
         Task<PaginatedList<Debt>> FilterDebtsAsync(int pageNumber,
@@ -21,21 +21,26 @@ namespace MicroServices.WebDebts.Domain.Services
                                          DateTime? startDate, 
                                          DateTime? finishDate, 
                                          DebtInstallmentType? debtInstallmentType, 
-                                         DebtType? debtType);
+                                         DebtType? debtType,
+                                         Guid userId);
         Task DeleteDebt(Guid id);
     }
 
     public class DebtsService : IDebtsService
     {
         private readonly IDebtRepository _debtRepository;
+        private readonly IUserRepository _userRepository;
 
-        public DebtsService(IDebtRepository debtRepository)
+        public DebtsService(IDebtRepository debtRepository, IUserRepository userRepository)
         {
             _debtRepository = debtRepository;
+            _userRepository = userRepository;
         }
 
-        public async Task CreateDebtAsync(Debt debt, DebtType debtType)
+        public async Task CreateDebtAsync(Debt debt, DebtType debtType, Guid userId)
         {
+            var user = await _userRepository.FindByIdAsync(userId);
+
             var classInstallments = new InstallmentsContext();
 
             if (debtType == DebtType.Card)
@@ -53,7 +58,7 @@ namespace MicroServices.WebDebts.Domain.Services
                 debt.Value = debt.Value * debt.NumberOfInstallments;
             }
 
-            var installments = classInstallments.CreateInstallments(debt);
+            var installments = classInstallments.CreateInstallments(debt, user);
 
             debt.Installments = installments;
             debt.Id = Guid.NewGuid();
@@ -68,9 +73,9 @@ namespace MicroServices.WebDebts.Domain.Services
             await _debtRepository.DeleteDebt(id);
         }
 
-        public async Task<PaginatedList<Debt>> FilterDebtsAsync(int pageNumer, string name, decimal? value, DateTime? startDate, DateTime? finishDate, DebtInstallmentType? debtInstallmentType, DebtType? debtType)
+        public async Task<PaginatedList<Debt>> FilterDebtsAsync(int pageNumer, string name, decimal? value, DateTime? startDate, DateTime? finishDate, DebtInstallmentType? debtInstallmentType, DebtType? debtType, Guid userId)
         {
-            return await _debtRepository.FindDebtAsync(pageNumer, name, value, startDate, finishDate, debtInstallmentType, debtType);
+            return await _debtRepository.FindDebtAsync(pageNumer, name, value, startDate, finishDate, debtInstallmentType, debtType, userId);
         }
 
         public async Task<Debt> GetAllByIdAsync(Guid id)

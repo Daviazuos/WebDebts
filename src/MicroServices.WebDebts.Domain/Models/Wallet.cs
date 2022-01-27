@@ -13,6 +13,8 @@ namespace MicroServices.WebDebts.Domain.Models
         public DateTime StartAt {  get; set; }
         public DateTime? FinishAt {  get; set; }
         public List<WalletMonthController> WalletMonthControllers { get; set; }
+        public User User { get; set; }
+
     }
 
     public class WalletMonthController : ModelBase
@@ -21,5 +23,7 @@ namespace MicroServices.WebDebts.Domain.Models
         public int Year { get; set; }
         public decimal UpdatedValue { get; set; }
         public Wallet Wallet { get; set; }
+        public User User { get; set; }
+
     }
 }

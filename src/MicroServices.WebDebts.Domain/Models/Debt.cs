@@ -15,5 +15,6 @@ namespace MicroServices.WebDebts.Domain.Models
         public int NumberOfInstallments { get; set; }
         public List<Installments> Installments { get; set; }
         public Card Card { get; set; }
+        public User User { get; set; }
     }
 }

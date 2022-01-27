@@ -13,31 +13,36 @@ namespace MicroServices.WebDebts.Application.Service
 {
     public interface IWalletApplicationService
     {
-        Task<GenericResponse> CreateWallet(WalletAppModel walletAppModel);
+        Task<GenericResponse> CreateWallet(WalletAppModel walletAppModel, Guid userId);
         Task<GetWalletByIdResponse> GetWalletById(Guid id);
         Task<GenericResponse> UpdateWallet(Guid id, WalletAppModel walletAppModel);
-        Task<IEnumerable<GetWalletByIdResponse>> GetWallets(WalletStatus walletStatus);
+        Task<IEnumerable<GetWalletByIdResponse>> GetWallets(WalletStatus walletStatus, Guid userId);
         Task DeleteWallet(Guid id);
     }
     public class WalletApplicationService : IWalletApplicationService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IWalletService _walletService;
+        private readonly IUserRepository _userRepository;
         
-        public WalletApplicationService(IUnitOfWork unitOfWork, IWalletService walletService)
+        public WalletApplicationService(IUnitOfWork unitOfWork, IWalletService walletService, IUserRepository userRepository)
         {
             _unitOfWork = unitOfWork;
             _walletService = walletService;
+            _userRepository = userRepository;
         }
 
-        public async Task<GenericResponse> CreateWallet(WalletAppModel walletAppModel)
+        public async Task<GenericResponse> CreateWallet(WalletAppModel walletAppModel, Guid userId)
         {
+            var user = await _userRepository.FindByIdAsync(userId);
+
             var wallet = walletAppModel.ToEntity();
 
             wallet.Id = Guid.NewGuid(); 
             wallet.StartAt = DateTime.Now;
             wallet.HistoryId = wallet.Id;
-            
+            wallet.User = user;
+
             await _walletService.CreateWalletAsync(wallet);
             await _unitOfWork.CommitAsync();
 
@@ -51,7 +56,7 @@ namespace MicroServices.WebDebts.Application.Service
             if (walletAppModel.Value != wallet.Value)
             {
                 wallet.FinishAt = DateTime.Now;
-                wallet.WalletStatus = Domain.Models.Enum.WalletStatus.Disable;
+                wallet.WalletStatus = WalletStatus.Disable;
 
                 await _walletService.UpdateWalletAsync(wallet);
 
@@ -83,9 +88,9 @@ namespace MicroServices.WebDebts.Application.Service
             return walletAppResult;
         }
 
-        public async Task<IEnumerable<GetWalletByIdResponse>> GetWallets(WalletStatus walletStatus)
+        public async Task<IEnumerable<GetWalletByIdResponse>> GetWallets(WalletStatus walletStatus, Guid userId)
         {
-            var wallets = await _walletService.GetWalletAsync(walletStatus);
+            var wallets = await _walletService.GetWalletAsync(walletStatus, userId);
             var walletAppResult = wallets.Select(x => x.ToResponseModel());
 
             return walletAppResult;

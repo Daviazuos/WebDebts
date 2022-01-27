@@ -1,9 +1,13 @@
+using MicroServices.WebDebts.Api.Extensions;
 using MicroServices.WebDebts.DependencyInjection;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using System.Text.Json.Serialization;
 
 namespace MicroServices.WebDebts.Api
@@ -32,9 +36,28 @@ namespace MicroServices.WebDebts.Api
             {
                 o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
-
+            services.AddHttpContextAccessor();
             services.AddControllers();
-            services.AddSwaggerGen();
+            services.AddSwaggerDocumentation();
+
+            var key = Encoding.ASCII.GetBytes(Configuration["Token:Secret"]);
+            services.AddAuthentication(x =>
+            {
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(x =>
+            {
+                x.RequireHttpsMetadata = false;
+                x.SaveToken = true;
+                x.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
+            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -52,6 +75,7 @@ namespace MicroServices.WebDebts.Api
 
             app.UseRouting();
             app.UseCors("cors");
+            app.UseAuthentication();
             app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {

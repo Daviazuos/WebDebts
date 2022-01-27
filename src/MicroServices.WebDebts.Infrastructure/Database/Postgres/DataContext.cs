@@ -15,6 +15,7 @@ namespace MicroServices.WebDebts.Infrastructure.Database.Postgres
         public DbSet<Card> Card { get; set; }
         public DbSet<Wallet> Wallet{ get; set; }
         public DbSet<WalletMonthController> WalletMonthControllers { get; set; }
+        public DbSet<User> User { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

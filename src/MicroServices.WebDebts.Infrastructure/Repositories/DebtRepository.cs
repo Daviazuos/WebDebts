@@ -3,10 +3,12 @@ using MicroServices.WebDebts.Domain.Models;
 using MicroServices.WebDebts.Domain.Models.Commom;
 using MicroServices.WebDebts.Domain.Models.Enum;
 using MicroServices.WebDebts.Infrastructure.Database.Postgres;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace MicroServices.WebDebts.Infrastructure.Repositories
@@ -16,6 +18,7 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
         private readonly DataContext _context;
         private DbSet<Debt> _dbSet;
         private DbSet<Installments> _dbSetInstallment;
+
 
         public DebtRepository(DataContext context) : base(context)
         {
@@ -34,17 +37,20 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             _dbSetInstallment.RemoveRange(debtToRemove.SelectMany(x => x.Installments));
         }
 
-        public async Task<PaginatedList<Debt>> FindDebtAsync(int pageNumber, string name, decimal? value, DateTime? startDate, DateTime? finishDate, DebtInstallmentType? debtInstallmentType, DebtType? debtType)
+        public async Task<PaginatedList<Debt>> FindDebtAsync(int pageNumber, string name, decimal? value, DateTime? startDate, DateTime? finishDate, DebtInstallmentType? debtInstallmentType, DebtType? debtType, Guid userId)
         {
             var query = _dbSet.Include(x => x.Installments).Where(x => x.Card == null);
 
             var resultQuery = DebtsFilters(query, name, value, startDate, finishDate, debtInstallmentType, debtType);
 
+            resultQuery = resultQuery.Where(x => x.User.Id == userId);
+
             var skipNumber = pageNumber > 0 ? ((pageNumber - 1) * 15) : 0;
             var totalItems = resultQuery.Count();
             var totalPages = Convert.ToInt32(totalItems / 15 + (totalItems % 15 > 0 ? 1 : 0));
 
-            var resultFilter = await resultQuery.Skip(skipNumber)
+            var resultFilter = await resultQuery.OrderBy(x => x.Date)
+                                                .Skip(skipNumber)
                                                 .Take(15)
                                                 .ToListAsync();
 
@@ -117,24 +123,33 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             return resultQuery;
         }
 
-        public async Task<PaginatedList<Installments>> FilterInstallmentsAsync(int pageNumber, Guid? debtId, int? month, int? year, DebtInstallmentType? debtInstallmentType, Status? status)
+        public async Task<PaginatedList<Installments>> FilterInstallmentsAsync(int pageNumber, int pageSize, Guid? debtId, int? month, int? year, DebtInstallmentType? debtInstallmentType, Status? status, DebtType? debtType, Guid userId)
         {
+
             var installments = _context.Installments.Include(x => x.Debt).AsQueryable();
+
+            installments = installments.Where(x => x.User.Id == userId);
 
             if (debtId.HasValue)
                 installments = installments.Where(x => x.Debt.Id == debtId.Value).AsQueryable();
             
             if (debtInstallmentType.HasValue)
                 installments = installments.Where(x => x.Debt.DebtInstallmentType == debtInstallmentType.Value);
+
+            if (debtType.HasValue)
+            {
+                installments = installments.Where(x => x.Debt.DebtType == debtType.Value);
+            }
             
             var resultQuery = InstallmentsFilters(installments, month, year, status);
 
-            var skipNumber = pageNumber > 0 ? ((pageNumber - 1) * 15) : 0;
+            var skipNumber = pageNumber > 0 ? ((pageNumber - 1) * pageSize) : 0;
             var totalItems = resultQuery.Count();
-            var totalPages = Convert.ToInt32(totalItems / 15 + (totalItems % 15 > 0 ? 1 : 0));
+            var totalPages = Convert.ToInt32(totalItems / pageSize + (totalItems % pageSize > 0 ? 1 : 0));
 
-            var resultFilter = await resultQuery.Skip(skipNumber)
-                                                .Take(15)
+            var resultFilter = await resultQuery.OrderBy(x => x.Date)
+                                                .Skip(skipNumber)
+                                                .Take(pageSize)
                                                 .ToListAsync();
 
             return new PaginatedList<Installments>
@@ -182,13 +197,14 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
                 installment.PaymentDate = null;
         }
 
-        public async Task<List<Installments>> GetSumPerMonthAsync(int? month, int? year)
+        public async Task<List<Installments>> GetSumPerMonthAsync(int? month, int? year, Guid userId)
         {
             var startDate = new DateTime(year.Value, month.Value, 1, 0, 0, 0);
             var finishDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 31);
 
 
             var installments = _context.Debt.Include(x => x.Installments).SelectMany(x => x.Installments).AsQueryable();
+            installments = installments.Where(x => x.User.Id == userId);
             installments = installments.Where(x => x.Date >= startDate.Date);
             installments = installments.Where(x => x.Date <= finishDate.Date);
 

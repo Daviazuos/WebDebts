@@ -12,5 +12,6 @@ namespace MicroServices.WebDebts.Domain.Models
         public Status Status { get; set; }
         public Debt Debt { get; set; }
         public Guid? WalletMonthControllerId { get; set; }
+        public User User { get; set; }
     }
 }

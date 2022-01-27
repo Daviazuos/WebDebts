@@ -2,10 +2,12 @@
 using MicroServices.WebDebts.Application.Models.DebtModels;
 using MicroServices.WebDebts.Application.Service;
 using MicroServices.WebDebts.Domain.Models.Enum;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Net.Mime;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace MicroServices.WebDebts.Api.Controllers
@@ -15,24 +17,31 @@ namespace MicroServices.WebDebts.Api.Controllers
     public class WalletController : ControllerBase
     {
         private readonly IWalletApplicationService _walletApplicationService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public WalletController(IWalletApplicationService walletApplicationService)
+
+        public WalletController(IWalletApplicationService walletApplicationService, IHttpContextAccessor httpContextAccessor)
         {
             _walletApplicationService = walletApplicationService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpPost, Route("Create")]
+        [Authorize]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<GenericResponse>> CreateWalletAsync([FromBody] WalletAppModel walletAppModel)
         {
-            var waletId = await _walletApplicationService.CreateWallet(walletAppModel);
+            var _userId = Guid.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Sid));
+
+            var waletId = await _walletApplicationService.CreateWallet(walletAppModel, _userId);
 
             return new OkObjectResult(waletId);
         }
 
         [HttpGet, Route("GetWalletById")]
+        [Authorize]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -44,17 +53,21 @@ namespace MicroServices.WebDebts.Api.Controllers
         }
 
         [HttpGet, Route("GetWallets")]
+        [Authorize]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<GetWalletByIdResponse>> GetWallets(WalletStatus walletStatus)
         {
-            var wallet = await _walletApplicationService.GetWallets(walletStatus);
+            var _userId = Guid.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Sid));
+
+            var wallet = await _walletApplicationService.GetWallets(walletStatus, _userId);
 
             return new OkObjectResult(wallet);
         }
 
         [HttpPut, Route("UpdateWallet")]
+        [Authorize]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -66,6 +79,7 @@ namespace MicroServices.WebDebts.Api.Controllers
         }
 
         [HttpDelete, Route("DeleteWallet")]
+        [Authorize]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

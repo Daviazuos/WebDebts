@@ -28,6 +28,8 @@ namespace MicroServices.WebDebts.DependencyInjection
             services.AddScoped<IDebtsApplicationService, DebtsApplicationService>();
             services.AddScoped<ICardsApplicationService, CardsApplicationService>();
             services.AddScoped<IWalletApplicationService, WalletApplicationService>();
+            services.AddScoped<IUserApplicationService, UserApplicationService>();
+            services.AddScoped<ITokenApplicationService, TokenApplicationService>();
         }
 
         public static void RegisterDomain(IServiceCollection services)
@@ -42,6 +44,7 @@ namespace MicroServices.WebDebts.DependencyInjection
             services.AddScoped<IDebtRepository, DebtRepository>();
             services.AddScoped<ICardRepository, CardRepository>();
             services.AddScoped<IWalletRepository, WalletRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
         }
     }
 }

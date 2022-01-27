@@ -23,9 +23,9 @@ namespace MicroServices.WebDebts.Domain.Common
             _InstallmentsStrategy = installmentsStrategy;
         }
 
-        public List<Installments> CreateInstallments(Debt debt)
+        public List<Installments> CreateInstallments(Debt debt, User user)
         {
-            return _InstallmentsStrategy.CreateInstallmentsStrategy(debt);
+            return _InstallmentsStrategy.CreateInstallmentsStrategy(debt, user);
         }
     }
 }

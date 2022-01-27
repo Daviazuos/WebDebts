@@ -2,6 +2,7 @@
 using MicroServices.WebDebts.Application.Models.DebtModels;
 using MicroServices.WebDebts.Application.Models.Mappers;
 using MicroServices.WebDebts.Domain.Interfaces.Repository;
+using MicroServices.WebDebts.Domain.Models;
 using MicroServices.WebDebts.Domain.Models.Commom;
 using MicroServices.WebDebts.Domain.Models.Enum;
 using MicroServices.WebDebts.Domain.Services;
@@ -14,17 +15,19 @@ namespace MicroServices.WebDebts.Application.Services
 {
     public interface IDebtsApplicationService
     {
-        Task<GenericResponse> CreateDebt(CreateDebtAppModel createDebtsRequest);
+        Task<GenericResponse> CreateDebt(CreateDebtAppModel createDebtsRequest, Guid userId);
         Task<GetDebtByIdResponse> GetDebtsById(Guid id);
         Task DeletePerson(DeleteDebtByIdRequest deletePersonRequest);
-        Task<PaginatedList<GetDebtByIdResponse>> FilterDebtsById(FilterDebtRequest filterDebtRequest);
-        Task<PaginatedList<FilterInstallmentsResponse>> FilterInstallments(FilterInstallmentsRequest filterInstallmentsRequest);
-        Task PutInstallments(PutInstallmentsRequest putInstallmentsRequest);
-        Task<List<GetSumbyMonthResponse>> GetSumByMonth(GetSumByMonthRequest getSumByMonthRequest);
+        Task<PaginatedList<GetDebtByIdResponse>> FilterDebtsById(FilterDebtRequest filterDebtRequest, Guid userId);
+        Task<PaginatedList<FilterInstallmentsResponse>> FilterInstallments(FilterInstallmentsRequest filterInstallmentsRequest, Guid userId);
+        Task PutInstallments(PutInstallmentsRequest putInstallmentsRequest, Guid userId);
+        Task<List<GetSumbyMonthResponse>> GetSumByMonth(GetSumByMonthRequest getSumByMonthRequest, Guid userId);
     }
 
     public class DebtsApplicationService : IDebtsApplicationService
     {
+        private readonly IUserRepository _userRepository;
+
         private readonly IDebtsService _debtsServices;
 
         private readonly IDebtRepository _debtRepository;
@@ -35,20 +38,24 @@ namespace MicroServices.WebDebts.Application.Services
 
         private readonly ICardRepository _cardRepository;
 
-        public DebtsApplicationService(IDebtsService debtsServices, IUnitOfWork unitOfWork, IDebtRepository debtRepository, IWalletRepository walletRepository, ICardRepository cardRepository)
+        public DebtsApplicationService(IDebtsService debtsServices, IUnitOfWork unitOfWork, IDebtRepository debtRepository, IWalletRepository walletRepository, ICardRepository cardRepository, IUserRepository userRepository)
         {
             _debtsServices = debtsServices;
             _debtRepository = debtRepository;
             _unitOfWork = unitOfWork;
             _walletRepository = walletRepository;
             _cardRepository = cardRepository;
+            _userRepository = userRepository;
         }
 
-        public async Task<GenericResponse> CreateDebt(CreateDebtAppModel createDebtsRequest)
+        public async Task<GenericResponse> CreateDebt(CreateDebtAppModel createDebtsRequest, Guid userId)
         {
+            var user = await _userRepository.FindByIdAsync(userId);
+
             var debt = createDebtsRequest.ToCreateModel();
+            debt.User = user;
             
-            await _debtsServices.CreateDebtAsync(debt, DebtType.Simple);
+            await _debtsServices.CreateDebtAsync(debt, DebtType.Simple, userId);
             await _unitOfWork.CommitAsync();
             
             return new GenericResponse { Id = debt.Id };
@@ -60,7 +67,7 @@ namespace MicroServices.WebDebts.Application.Services
             await _unitOfWork.CommitAsync();
         }
 
-        public async Task<PaginatedList<GetDebtByIdResponse>> FilterDebtsById(FilterDebtRequest filterDebtRequest)
+        public async Task<PaginatedList<GetDebtByIdResponse>> FilterDebtsById(FilterDebtRequest filterDebtRequest, Guid userId)
         {
             var debt = await _debtsServices.FilterDebtsAsync(filterDebtRequest.PageNumber,
                                                              filterDebtRequest.Name, 
@@ -68,7 +75,8 @@ namespace MicroServices.WebDebts.Application.Services
                                                              filterDebtRequest.StartDate,
                                                              filterDebtRequest.FInishDate,
                                                              (DebtInstallmentType?)filterDebtRequest.DebtInstallmentType, 
-                                                             (DebtType?)filterDebtRequest.DebtType);
+                                                             (DebtType?)filterDebtRequest.DebtType,
+                                                             userId);
 
 
             var debtAppResult = debt.Items.Select(x => x.ToResponseModel()).ToList();
@@ -82,14 +90,17 @@ namespace MicroServices.WebDebts.Application.Services
             };
         }
 
-        public async Task<PaginatedList<FilterInstallmentsResponse>> FilterInstallments(FilterInstallmentsRequest filterInstallmentsRequest)
+        public async Task<PaginatedList<FilterInstallmentsResponse>> FilterInstallments(FilterInstallmentsRequest filterInstallmentsRequest, Guid userId)
         {
             var debts = await _debtRepository.FilterInstallmentsAsync(filterInstallmentsRequest.PageNumber,
+                                                                      filterInstallmentsRequest.PageSize,
                                                                       filterInstallmentsRequest.DebtId, 
                                                                       filterInstallmentsRequest.Month, 
                                                                       filterInstallmentsRequest.Year, 
                                                                       (DebtInstallmentType?)filterInstallmentsRequest.DebtInstallmentType,
-                                                                      (Status?)filterInstallmentsRequest.StatusApp);
+                                                                      (Status?)filterInstallmentsRequest.StatusApp,
+                                                                      (DebtType?)filterInstallmentsRequest.DebtType,
+                                                                      userId);
 
             var installmentsApp = debts.Items.Select( x => new FilterInstallmentsResponse { 
                                                                             Date = x.Date, 
@@ -98,7 +109,7 @@ namespace MicroServices.WebDebts.Application.Services
                                                                             InstallmentNumber = x.InstallmentNumber,
                                                                             PaymentDate = x.PaymentDate,
                                                                             Status = (EnumAppModel.StatusApp)x.Status,
-                                                                            Value = x.Value}).OrderBy(x => x.Date);
+                                                                            Value = x.Value});
 
             return new PaginatedList<FilterInstallmentsResponse>
             {
@@ -118,14 +129,14 @@ namespace MicroServices.WebDebts.Application.Services
             return debtAppResult;
         }
 
-        public async Task<List<GetSumbyMonthResponse>> GetSumByMonth(GetSumByMonthRequest getSumByMonthRequest)
+        public async Task<List<GetSumbyMonthResponse>> GetSumByMonth(GetSumByMonthRequest getSumByMonthRequest, Guid userId)
         {
             var startDate = new DateTime(getSumByMonthRequest.Year.Value, getSumByMonthRequest.Month.Value, 31, 0, 0, 0);
             var finishDate = DateTime.UtcNow.AddMonths(1);
 
-            var installments = await _debtRepository.GetSumPerMonthAsync(getSumByMonthRequest.Month, getSumByMonthRequest.Year);
+            var installments = await _debtRepository.GetSumPerMonthAsync(getSumByMonthRequest.Month, getSumByMonthRequest.Year, userId);
 
-            var wallets = await _walletRepository.GetWalletByMonth(getSumByMonthRequest.Month, getSumByMonthRequest.Year);
+            var wallets = await _walletRepository.GetWalletByMonth(getSumByMonthRequest.Month, getSumByMonthRequest.Year, userId);
 
             var groupedWallet = wallets.GroupBy(x => new { x.StartAt.Month, x.StartAt.Year })
                     .Select(g => new
@@ -194,15 +205,16 @@ namespace MicroServices.WebDebts.Application.Services
             return sumValues;
         }
 
-        public async Task PutInstallments(PutInstallmentsRequest putInstallmentsRequest)
+        public async Task PutInstallments(PutInstallmentsRequest putInstallmentsRequest, Guid userId)
         {
             if (putInstallmentsRequest.InstallmentsStatus == Status.Paid)
             {
                 var installment = await _debtRepository.GetInstallmentById(putInstallmentsRequest.Id);
                 var walletId = await _walletRepository.SubtractWalletMonthControllers(putInstallmentsRequest.WalletId.Value,
-                                                                       putInstallmentsRequest.PaymentDate.Value.Month,
-                                                                       putInstallmentsRequest.PaymentDate.Value.Year,
-                                                                       installment.Value);
+                                                                                      putInstallmentsRequest.PaymentDate.Value.Month,
+                                                                                      putInstallmentsRequest.PaymentDate.Value.Year,
+                                                                                      installment.Value);
+
                 await _debtRepository.UpdateInstallmentAsync(putInstallmentsRequest.Id, putInstallmentsRequest.InstallmentsStatus, putInstallmentsRequest.PaymentDate, walletId);
             }
             else

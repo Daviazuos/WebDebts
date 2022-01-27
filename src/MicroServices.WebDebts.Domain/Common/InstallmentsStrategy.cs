@@ -9,12 +9,12 @@ namespace MicroServices.WebDebts.Domain.Service
     {
         public interface IInstallmentsStrategy
         {
-            List<Installments> CreateInstallmentsStrategy(Debt debt);
+            List<Installments> CreateInstallmentsStrategy(Debt debt, User user);
         }
 
         public class CreateInstallments : IInstallmentsStrategy
         {
-            public List<Installments> CreateInstallmentsStrategy(Debt debt)
+            public List<Installments> CreateInstallmentsStrategy(Debt debt, User user)
             {
                 var installmentsList = new List<Installments>();
 
@@ -34,7 +34,8 @@ namespace MicroServices.WebDebts.Domain.Service
                             Date = date,
                             Status = Status.Paid,
                             PaymentDate = date,
-                            Value = installmentValue
+                            Value = installmentValue,
+                            User = user
                         };
                     }
                     else
@@ -47,7 +48,8 @@ namespace MicroServices.WebDebts.Domain.Service
                             Date = debt.Date.AddMonths(i),
                             Status = Status.NotPaid,
                             PaymentDate = null,
-                            Value = installmentValue
+                            Value = installmentValue,
+                            User = user
                         };
                     }
 
@@ -60,7 +62,7 @@ namespace MicroServices.WebDebts.Domain.Service
 
         public class CreateFixedInstallments : IInstallmentsStrategy
         {
-            public List<Installments> CreateInstallmentsStrategy(Debt debt)
+            public List<Installments> CreateInstallmentsStrategy(Debt debt, User user)
             {
                 // Todo Criando as parcelas fixas com um total fixo de 5 anos 
 
@@ -80,7 +82,8 @@ namespace MicroServices.WebDebts.Domain.Service
                             Date = date,
                             Status = Status.Paid,
                             PaymentDate = date,
-                            Value = debt.Value
+                            Value = debt.Value,
+                            User = user
                         };
                     }
                     else
@@ -93,7 +96,8 @@ namespace MicroServices.WebDebts.Domain.Service
                             Date = debt.Date.AddMonths(i),
                             Status = Status.NotPaid,
                             PaymentDate = null,
-                            Value = debt.Value
+                            Value = debt.Value,
+                            User = user
                         };
                     }
                     
@@ -107,7 +111,7 @@ namespace MicroServices.WebDebts.Domain.Service
 
         public class CreateSimpleInstallments : IInstallmentsStrategy
         {
-            public List<Installments> CreateInstallmentsStrategy(Debt debt)
+            public List<Installments> CreateInstallmentsStrategy(Debt debt, User user)
             {
                 var installmentsList = new List<Installments>();
                 var installment = new Installments
@@ -118,7 +122,8 @@ namespace MicroServices.WebDebts.Domain.Service
                     Date = debt.Date,
                     Status = Status.NotPaid,
                     PaymentDate = null,
-                    Value = debt.Value
+                    Value = debt.Value,
+                    User = user
                 };
 
                 installmentsList.Add(installment);

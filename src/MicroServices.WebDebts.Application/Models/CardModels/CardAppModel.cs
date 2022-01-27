@@ -5,5 +5,6 @@
         public string Name { get; set; }
         public int DueDate { get; set; }
         public int ClosureDate { get; set; }
+        public string Color { get; set; }
     }
 }
