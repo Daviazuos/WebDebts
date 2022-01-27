@@ -39,7 +39,7 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
 
         public async Task<PaginatedList<Debt>> FindDebtAsync(int pageNumber, string name, decimal? value, DateTime? startDate, DateTime? finishDate, DebtInstallmentType? debtInstallmentType, DebtType? debtType, Guid userId)
         {
-            var query = _dbSet.Include(x => x.Installments).Where(x => x.Card == null);
+            var query = _dbSet.Include(x => x.Installments);
 
             var resultQuery = DebtsFilters(query, name, value, startDate, finishDate, debtInstallmentType, debtType);
 
