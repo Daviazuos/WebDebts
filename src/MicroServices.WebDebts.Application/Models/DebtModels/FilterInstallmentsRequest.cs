@@ -8,6 +8,7 @@ namespace MicroServices.WebDebts.Application.Models
         public int PageNumber { get; set; }
         public int PageSize { get; set; }
         public Guid? DebtId { get; set; }
+        public Guid? CardId { get; set; }
         public DebtInstallmentTypeApp? DebtInstallmentType { get; set; }
         public StatusApp? StatusApp { get; set; }
         public DebtTypeApp? DebtType { get; set; }

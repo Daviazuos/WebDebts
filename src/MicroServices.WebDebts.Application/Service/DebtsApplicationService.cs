@@ -95,7 +95,8 @@ namespace MicroServices.WebDebts.Application.Services
         {
             var debts = await _debtRepository.FilterInstallmentsAsync(filterInstallmentsRequest.PageNumber,
                                                                       filterInstallmentsRequest.PageSize,
-                                                                      filterInstallmentsRequest.DebtId, 
+                                                                      filterInstallmentsRequest.DebtId,
+                                                                      filterInstallmentsRequest.CardId,
                                                                       filterInstallmentsRequest.Month, 
                                                                       filterInstallmentsRequest.Year, 
                                                                       (DebtInstallmentType?)filterInstallmentsRequest.DebtInstallmentType,

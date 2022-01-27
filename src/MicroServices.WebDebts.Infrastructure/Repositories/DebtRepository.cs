@@ -123,7 +123,7 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             return resultQuery;
         }
 
-        public async Task<PaginatedList<Installments>> FilterInstallmentsAsync(int pageNumber, int pageSize, Guid? debtId, int? month, int? year, DebtInstallmentType? debtInstallmentType, Status? status, DebtType? debtType, Guid userId)
+        public async Task<PaginatedList<Installments>> FilterInstallmentsAsync(int pageNumber, int pageSize, Guid? debtId, Guid? cardId, int? month, int? year, DebtInstallmentType? debtInstallmentType, Status? status, DebtType? debtType, Guid userId)
         {
 
             var installments = _context.Installments.Include(x => x.Debt).AsQueryable();
@@ -133,6 +133,9 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             if (debtId.HasValue)
                 installments = installments.Where(x => x.Debt.Id == debtId.Value).AsQueryable();
             
+            if (cardId.HasValue)
+                installments = installments.Where(x => x.Debt.Card.Id == cardId.Value).AsQueryable();
+
             if (debtInstallmentType.HasValue)
                 installments = installments.Where(x => x.Debt.DebtInstallmentType == debtInstallmentType.Value);
 
