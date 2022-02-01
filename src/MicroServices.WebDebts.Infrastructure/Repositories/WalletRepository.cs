@@ -45,11 +45,10 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
         public async Task<Guid> SubtractWalletMonthControllers(Guid walletId, int month, int year, decimal value)
         {
             var wallet = await _dbSet.Where(x => x.Id == walletId).Include(x => x.WalletMonthControllers).FirstOrDefaultAsync();
+            var walletControllers = wallet?.WalletMonthControllers.Where(x => x.Month == month && x.Year == year).FirstOrDefault();
 
-            if (wallet.WalletMonthControllers.Count > 0)
+            if (walletControllers != null)
             {
-                var walletControllers = wallet.WalletMonthControllers.Where(x => x.Month == month && x.Year == year).FirstOrDefault();
-
                 walletControllers.UpdatedValue = walletControllers.UpdatedValue - value;
                 
                 _context.WalletMonthControllers.Update(walletControllers);
