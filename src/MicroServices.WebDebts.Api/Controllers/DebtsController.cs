@@ -41,6 +41,20 @@ namespace MicroServices.WebDebts.Api.Controllers
             return new OkObjectResult(debt);
         }
 
+        [HttpPost, Route("Edit")]
+        [Authorize]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult> EditDebtAsync([FromQuery] Guid id, [FromBody] CreateDebtAppModel createDebtsRequest)
+        {
+            var _userId = Guid.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Sid));
+
+            await _debtsApplicationService.EditDebt(createDebtsRequest, _userId);
+
+            return new OkResult();
+        }
+
         [HttpGet, Route("GetDebtById")]
         [Authorize]
         [Consumes(MediaTypeNames.Application.Json)]

@@ -202,8 +202,10 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
 
         public async Task<List<Installments>> GetSumPerMonthAsync(int? month, int? year, Guid userId)
         {
+            var futureDate = DateTime.UtcNow.AddMonths(2);
+
             var startDate = new DateTime(year.Value, month.Value, 1, 0, 0, 0);
-            var finishDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.AddMonths(2).Month, 31);
+            var finishDate = new DateTime(futureDate.Year, futureDate.Month, DateTime.DaysInMonth(futureDate.Year, futureDate.Month));
 
 
             var installments = _context.Debt.Include(x => x.Installments).SelectMany(x => x.Installments).AsQueryable();

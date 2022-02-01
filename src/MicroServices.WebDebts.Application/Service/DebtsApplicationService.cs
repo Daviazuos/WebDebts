@@ -22,6 +22,7 @@ namespace MicroServices.WebDebts.Application.Services
         Task<PaginatedList<FilterInstallmentsResponse>> FilterInstallments(FilterInstallmentsRequest filterInstallmentsRequest, Guid userId);
         Task PutInstallments(PutInstallmentsRequest putInstallmentsRequest, Guid userId);
         Task<List<GetSumbyMonthResponse>> GetSumByMonth(GetSumByMonthRequest getSumByMonthRequest, Guid userId);
+        Task EditDebt(CreateDebtAppModel createDebtsRequest, Guid userId);
     }
 
     public class DebtsApplicationService : IDebtsApplicationService
@@ -65,6 +66,11 @@ namespace MicroServices.WebDebts.Application.Services
         {
             await _debtsServices.DeleteDebt(deleteDebtByIdRequest.Id);
             await _unitOfWork.CommitAsync();
+        }
+
+        public async Task EditDebt(CreateDebtAppModel createDebtsRequest, Guid userId)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task<PaginatedList<GetDebtByIdResponse>> FilterDebtsById(FilterDebtRequest filterDebtRequest, Guid userId)
