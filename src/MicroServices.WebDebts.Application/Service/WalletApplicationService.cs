@@ -45,6 +45,11 @@ namespace MicroServices.WebDebts.Application.Service
             wallet.HistoryId = wallet.Id;
             wallet.User = user;
 
+            if (walletAppModel.FinishDate.HasValue)
+            {
+                wallet.FinishAt = walletAppModel.FinishDate.Value;
+            }
+
             await _walletService.CreateWalletAsync(wallet);
             await _unitOfWork.CommitAsync();
 

@@ -155,7 +155,7 @@ namespace MicroServices.WebDebts.Application.Services
 
                     }).ToList();
 
-            var walletsPerDate = new Dictionary<string, decimal>();
+            var walletsPerDate = new Dictionary<string, List<Decimal>>();
 
             for (var dt = startDate; dt <= finishDate; dt = dt.AddMonths(1))
             {
@@ -168,14 +168,32 @@ namespace MicroServices.WebDebts.Application.Services
                             var dayOne = new DateTime(dt.Year, dt.Month, 1);
                             if (dayOne <= wallet.WalletFinishDate.Value)
                             {
-                                walletsPerDate.Add(dt.Month.ToString() + dt.Year.ToString(), wallet.WalletValue);
-                                break;
+                                if (walletsPerDate.GetValueOrDefault(dt.Month.ToString() + dt.Year.ToString(), null) == null)
+                                {
+                                    var listValues = new List<decimal>();
+                                    listValues.Add(wallet.WalletValue);
+                                    walletsPerDate.Add(dt.Month.ToString() + dt.Year.ToString(), listValues);
+                                }
+                                else
+                                {
+                                    walletsPerDate[dt.Month.ToString() + dt.Year.ToString()].Add(wallet.WalletValue);
+                                }
+                                
                             }
                         }
                         else
                         {
-                            walletsPerDate.Add(dt.Month.ToString() + dt.Year.ToString(), wallet.WalletValue);
-                            break;
+                            if (walletsPerDate.GetValueOrDefault(dt.Month.ToString() + dt.Year.ToString(), null) == null)
+                            {
+                                var listValues = new List<decimal>();
+                                listValues.Add(wallet.WalletValue);
+                                walletsPerDate.Add(dt.Month.ToString() + dt.Year.ToString(), listValues);
+                            }
+                            else
+                            {
+                                walletsPerDate[dt.Month.ToString() + dt.Year.ToString()].Add(wallet.WalletValue);
+                            }
+
                         }
                     }
                 }
@@ -195,14 +213,15 @@ namespace MicroServices.WebDebts.Application.Services
             intToMonth.Add(11, "Novembro");
             intToMonth.Add(12, "Dezembro");
 
-            var defaultValue = new decimal(0.00);
+            var defaultValue = new List<decimal>();
+            defaultValue.Add(new decimal(0.00));
 
             var sumValues = installments.GroupBy(d => new { d.Date.Month, d.Date.Year })
                                     .Select(
                                         g => new GetSumbyMonthResponse
                                         {
                                             DebtValue = g.Sum(s => s.Value),
-                                            WalletValue = walletsPerDate.GetValueOrDefault(g.First().Date.Month.ToString() + g.First().Date.Year.ToString(), defaultValue),
+                                            WalletValue = walletsPerDate.GetValueOrDefault(g.First().Date.Month.ToString() + g.First().Date.Year.ToString(), defaultValue).Sum(x => x),
                                             Month = intToMonth[g.First().Date.Month],
                                             Year = g.First().Date.Year,
                                             OriginalDate = g.First().Date

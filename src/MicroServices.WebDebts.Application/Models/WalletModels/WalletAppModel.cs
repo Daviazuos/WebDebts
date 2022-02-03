@@ -1,4 +1,5 @@
 ﻿using MicroServices.WebDebts.Domain.Models.Enum;
+using System;
 
 namespace MicroServices.WebDebts.Application.Models
 {
@@ -6,6 +7,7 @@ namespace MicroServices.WebDebts.Application.Models
     {
         public string Name { get; set; }
         public decimal Value { get; set; }
+        public DateTime? FinishDate { get; set; }
         public WalletStatus WalletStatus { get; set; }
     }
 }
