@@ -25,7 +25,7 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
 
         public async Task<List<Wallet>> GetWallets(WalletStatus walletStatus, int month, int year, Guid userId)
         {
-            var resultQuery = await _dbSet.Where(x => x.FinishAt == null && x.WalletStatus == walletStatus && x.User.Id == userId)
+            var resultQuery = await _dbSet.Where(x => x.WalletStatus == walletStatus && x.User.Id == userId)
                                           .Include(x => x.WalletMonthControllers.Where(x => x.Month == month && x.Year == year)).ToListAsync();
 
 
