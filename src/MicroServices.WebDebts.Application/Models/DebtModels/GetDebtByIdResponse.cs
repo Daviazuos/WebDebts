@@ -11,6 +11,7 @@ namespace MicroServices.WebDebts.Application.Models
         public string Name { get; set; }
         public decimal Value { get; set; }
         public int NumberOfInstallments { get; set; }
+        public DateTime Date { get; set; }
         public DebtTypeApp DebtType { get; set; }
         public DebtInstallmentTypeApp DebtInstallmentType { get; set; }
         public List<InstallmentsAppModel> Installments { get; set; }

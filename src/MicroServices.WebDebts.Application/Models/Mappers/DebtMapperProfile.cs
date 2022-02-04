@@ -20,6 +20,7 @@ namespace MicroServices.WebDebts.Application.Models.Mappers
                 .ForMember(x => x.Id, opts => opts.MapFrom(x => x.Id))
                 .ForMember(x => x.Name, opts => opts.MapFrom(x => x.Name))
                 .ForMember(x => x.Value, opts => opts.MapFrom(x => x.Value))
+                .ForMember(x => x.Date, opts => opts.MapFrom(x => x.Date))
                 .ForMember(x => x.NumberOfInstallments, opts => opts.MapFrom(x => x.NumberOfInstallments))
                 .ForMember(x => x.DebtInstallmentType, opts => opts.MapFrom(x => x.DebtInstallmentType))
                 .ForMember(x => x.Installments, opts => opts.MapFrom(x =>x.Installments))
