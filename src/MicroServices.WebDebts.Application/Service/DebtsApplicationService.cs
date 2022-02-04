@@ -71,10 +71,13 @@ namespace MicroServices.WebDebts.Application.Services
 
         public async Task EditDebt(Guid id, CreateDebtAppModel createDebtsRequest, Guid userId)
         {
+            var user = await _userRepository.FindByIdAsync(userId);
+
             var oldDebt = await _debtRepository.GetAllByIdAsync(id);
             var debt = createDebtsRequest.ToCreateModel();
             debt.CreatedAt = oldDebt.CreatedAt;
             debt.Card = oldDebt.Card;
+            debt.User = user;
 
             await _debtsServices.DeleteDebt(id);
 
