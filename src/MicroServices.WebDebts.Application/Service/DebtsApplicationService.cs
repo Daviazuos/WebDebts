@@ -101,6 +101,16 @@ namespace MicroServices.WebDebts.Application.Services
 
             var debtAppResult = debt.Items.Select(x => x.ToResponseModel()).ToList();
 
+            foreach (var debtResult in debtAppResult)
+            {
+                var maxPayment = debtResult.Installments.Max(x => x.PaymentDate);
+                if (maxPayment.HasValue)
+                {
+                    var paidInstallment = debtResult.Installments.FirstOrDefault(x => x.PaymentDate == maxPayment).InstallmentNumber;
+                    debtResult.PaidInstallment = paidInstallment;
+                }
+            }
+
             return new PaginatedList<GetDebtByIdResponse>
             {
                 CurrentPage = debt.CurrentPage,
