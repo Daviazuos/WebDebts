@@ -86,7 +86,12 @@ namespace MicroServices.WebDebts.Application.Service
 
             wallet.Name = walletAppModel.Name;
             wallet.WalletStatus = walletAppModel.WalletStatus;
-            
+
+            if (walletAppModel.FinishDate.HasValue)
+            {
+                wallet.FinishAt = walletAppModel.FinishDate.Value;
+            }
+
             var walletUpdate = await _walletService.UpdateWalletAsync(wallet);
             await _unitOfWork.CommitAsync();
 
