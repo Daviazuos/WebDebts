@@ -74,6 +74,7 @@ namespace MicroServices.WebDebts.Application.Services
             var oldDebt = await _debtRepository.GetAllByIdAsync(id);
             var debt = createDebtsRequest.ToCreateModel();
             debt.CreatedAt = oldDebt.CreatedAt;
+            debt.Card = oldDebt.Card;
 
             await _debtsServices.DeleteDebt(id);
 
