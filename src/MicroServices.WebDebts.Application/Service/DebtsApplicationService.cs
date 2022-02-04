@@ -146,7 +146,7 @@ namespace MicroServices.WebDebts.Application.Services
 
             var wallets = await _walletRepository.GetWalletByMonth(getSumByMonthRequest.Month, getSumByMonthRequest.Year, userId);
 
-            var groupedWallet = wallets.GroupBy(x => new { x.StartAt.Month, x.StartAt.Year })
+            var groupedWallet = wallets.GroupBy(x => new { x.StartAt.Month, x.StartAt.Year, x.FinishAt })
                     .Select(g => new
                     {
                         WalletValue = g.Sum(s => s.Value),
