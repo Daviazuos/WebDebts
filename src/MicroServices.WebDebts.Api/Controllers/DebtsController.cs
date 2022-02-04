@@ -41,7 +41,7 @@ namespace MicroServices.WebDebts.Api.Controllers
             return new OkObjectResult(debt);
         }
 
-        [HttpPost, Route("Edit")]
+        [HttpPut, Route("Edit")]
         [Authorize]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -50,7 +50,7 @@ namespace MicroServices.WebDebts.Api.Controllers
         {
             var _userId = Guid.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Sid));
 
-            await _debtsApplicationService.EditDebt(createDebtsRequest, _userId);
+            await _debtsApplicationService.EditDebt(id, createDebtsRequest, _userId);
 
             return new OkResult();
         }

@@ -49,8 +49,9 @@ namespace MicroServices.WebDebts.Application.Service
             debt.User = user;
 
             var debtCard = await _cardService.LinkCard(debt, cardId);
+            var id = Guid.NewGuid();
 
-            await _debtsService.CreateDebtAsync(debtCard, DebtType.Card, userId);
+            await _debtsService.CreateDebtAsync(debtCard, DebtType.Card, id, userId);
             await _unitOfWork.CommitAsync();
 
             return new GenericResponse { Id = debt.Id };

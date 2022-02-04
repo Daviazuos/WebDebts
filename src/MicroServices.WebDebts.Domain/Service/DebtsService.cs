@@ -12,7 +12,7 @@ namespace MicroServices.WebDebts.Domain.Services
 {
     public interface IDebtsService
     {
-        Task CreateDebtAsync(Debt debt, DebtType debtType, Guid userId);
+        Task CreateDebtAsync(Debt debt, DebtType debtType, Guid id, Guid userId);
         Task<Debt> GetAllByIdAsync(Guid id);
 
         Task<PaginatedList<Debt>> FilterDebtsAsync(int pageNumber,
@@ -38,7 +38,7 @@ namespace MicroServices.WebDebts.Domain.Services
             _userRepository = userRepository;
         }
 
-        public async Task CreateDebtAsync(Debt debt, DebtType debtType, Guid userId)
+        public async Task CreateDebtAsync(Debt debt, DebtType debtType, Guid id, Guid userId)
         {
             var user = await _userRepository.FindByIdAsync(userId);
 
@@ -62,7 +62,7 @@ namespace MicroServices.WebDebts.Domain.Services
             var installments = classInstallments.CreateInstallments(debt, user);
 
             debt.Installments = installments;
-            debt.Id = Guid.NewGuid();
+            debt.Id = id;
             debt.CreatedAt = DateTime.Now;
             debt.DebtType = debtType;
 

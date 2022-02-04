@@ -22,7 +22,7 @@ namespace MicroServices.WebDebts.Application.Services
         Task<PaginatedList<FilterInstallmentsResponse>> FilterInstallments(FilterInstallmentsRequest filterInstallmentsRequest, Guid userId);
         Task PutInstallments(PutInstallmentsRequest putInstallmentsRequest, Guid userId);
         Task<List<GetSumbyMonthResponse>> GetSumByMonth(GetSumByMonthRequest getSumByMonthRequest, Guid userId);
-        Task EditDebt(CreateDebtAppModel createDebtsRequest, Guid userId);
+        Task EditDebt(Guid id, CreateDebtAppModel createDebtsRequest, Guid userId);
     }
 
     public class DebtsApplicationService : IDebtsApplicationService
@@ -55,8 +55,9 @@ namespace MicroServices.WebDebts.Application.Services
 
             var debt = createDebtsRequest.ToCreateModel();
             debt.User = user;
-            
-            await _debtsServices.CreateDebtAsync(debt, DebtType.Simple, userId);
+
+            var id = Guid.NewGuid();
+            await _debtsServices.CreateDebtAsync(debt, DebtType.Simple, id, userId);
             await _unitOfWork.CommitAsync();
             
             return new GenericResponse { Id = debt.Id };
@@ -68,9 +69,17 @@ namespace MicroServices.WebDebts.Application.Services
             await _unitOfWork.CommitAsync();
         }
 
-        public async Task EditDebt(CreateDebtAppModel createDebtsRequest, Guid userId)
+        public async Task EditDebt(Guid id, CreateDebtAppModel createDebtsRequest, Guid userId)
         {
-            throw new NotImplementedException();
+            var oldDebt = await _debtRepository.GetAllByIdAsync(id);
+            var debt = createDebtsRequest.ToCreateModel();
+            debt.CreatedAt = oldDebt.CreatedAt;
+
+            await _debtsServices.DeleteDebt(id);
+
+            await _debtsServices.CreateDebtAsync(debt, DebtType.Simple, id, userId);
+
+            await _unitOfWork.CommitAsync();
         }
 
         public async Task<PaginatedList<GetDebtByIdResponse>> FilterDebtsById(FilterDebtRequest filterDebtRequest, Guid userId)
