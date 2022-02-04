@@ -71,6 +71,7 @@ namespace MicroServices.WebDebts.Application.Service
                 newWallet.Id = Guid.NewGuid();
                 newWallet.HistoryId = wallet.Id;
                 newWallet.StartAt = DateTime.Now;
+                newWallet.User = wallet.User;
                 
                 if (walletAppModel.FinishDate.HasValue)
                 {
