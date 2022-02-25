@@ -62,11 +62,6 @@ namespace MicroServices.WebDebts.Application.Service
 
             if (walletAppModel.Value != wallet.Value)
             {
-                wallet.FinishAt = DateTime.Now;
-                wallet.WalletStatus = WalletStatus.Disable;
-
-                await _walletService.UpdateWalletAsync(wallet);
-
                 var newWallet = walletAppModel.ToEntity();
                 newWallet.Id = Guid.NewGuid();
                 newWallet.HistoryId = wallet.Id;
@@ -79,6 +74,12 @@ namespace MicroServices.WebDebts.Application.Service
                 }
 
                 var walletId = await _walletService.CreateWalletAsync(newWallet);
+
+                wallet.FinishAt = DateTime.Now;
+                wallet.WalletStatus = WalletStatus.Disable;
+
+                await _walletService.UpdateWalletAsync(wallet);
+
                 await _unitOfWork.CommitAsync();
 
                 return new GenericResponse { Id = walletId };
