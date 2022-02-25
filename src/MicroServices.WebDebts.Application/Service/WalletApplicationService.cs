@@ -41,7 +41,7 @@ namespace MicroServices.WebDebts.Application.Service
             var wallet = walletAppModel.ToEntity();
 
             wallet.Id = Guid.NewGuid(); 
-            wallet.StartAt = DateTime.Now;
+            wallet.StartAt = walletAppModel.InitialDate;
             wallet.HistoryId = wallet.Id;
             wallet.User = user;
 
@@ -70,7 +70,7 @@ namespace MicroServices.WebDebts.Application.Service
                 var newWallet = walletAppModel.ToEntity();
                 newWallet.Id = Guid.NewGuid();
                 newWallet.HistoryId = wallet.Id;
-                newWallet.StartAt = DateTime.Now;
+                newWallet.StartAt = walletAppModel.InitialDate;
                 newWallet.User = wallet.User;
                 
                 if (walletAppModel.FinishDate.HasValue)
