@@ -109,11 +109,16 @@ namespace MicroServices.WebDebts.Application.Service
         public async Task<IEnumerable<GetWalletByIdResponse>> GetWallets(WalletStatus walletStatus, int month, int year, Guid userId)
         {
             var startDate = new DateTime(year, month, 1);
+            var finishDate = new DateTime(year, month, DateTime.DaysInMonth(year, month));
 
             var wallets = await _walletRepository.GetWallets(walletStatus, month, year, userId);
-            var walletAppResult = wallets.Where(x => x.FinishAt == null || x.FinishAt > startDate).Select(x => x.ToResponseModel());
 
-            return walletAppResult;
+            var fixedWallets = wallets.Where(x => x.FinishAt == null).Select(x => x.ToResponseModel());
+            var walletAppResult = wallets.Where(x => x.FinishAt > startDate && x.StartAt <= finishDate).Select(x => x.ToResponseModel());
+
+            var walletResponse = fixedWallets.Concat(walletAppResult);
+
+            return walletResponse;
         }
 
         public async Task DeleteWallet(Guid id)
