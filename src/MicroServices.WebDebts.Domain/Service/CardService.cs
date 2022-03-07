@@ -41,17 +41,6 @@ namespace MicroServices.WebDebts.Domain.Service
         {
             var cards = await _cardRepository.FindCardValuesByIdAsync(id, userId);
 
-            if (month != null && year != null)
-            {
-                foreach (var debtList in cards.Select(x => x.DebtValues))
-                {
-                    foreach (var debt in debtList)
-                    {
-                        debt.Installments = debt.Installments.Where(x => x.Date.Month == month.Value && x.Date.Year == year).ToList();
-                    }
-                }
-            }
-
             return cards;
         }
 

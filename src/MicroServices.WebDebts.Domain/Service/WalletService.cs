@@ -21,6 +21,7 @@ namespace MicroServices.WebDebts.Domain.Service
         {
             _walletRepository = walletRepository;
         }
+
         public async Task<Guid> CreateWalletAsync(Wallet wallet)
         {
             wallet.CreatedAt = DateTime.Now;

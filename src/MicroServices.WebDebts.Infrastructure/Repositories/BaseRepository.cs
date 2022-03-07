@@ -28,7 +28,7 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             throw new NotImplementedException();
         }
 
-        public async Task<T> FindByIdAsync(Guid id)
+        public virtual async Task<T> FindByIdAsync(Guid id)
         {
             return await _dbSet.FindAsync(id);
         }

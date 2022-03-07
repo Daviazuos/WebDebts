@@ -83,12 +83,19 @@ namespace MicroServices.WebDebts.Application.Service
             var card = await _cardService.FilterCardsAsync(id, month, year, userId);
             var cardAppResult = card.Select(x => x.ToResponseModel()).ToList();
 
-
             var response = new List<GetCardsResponse>();
             foreach (var cardModel in cardAppResult)
             {
-                foreach (var debt in cardModel.Debts)
+                foreach (var debt in cardModel.Debts.ToList())
                 {
+                    if (debt.DebtInstallmentType == EnumAppModel.DebtInstallmentTypeApp.Simple)
+                    {
+                        if (debt.Date.Month != month.Value)
+                        {
+                            cardModel.Debts.Remove(debt);
+                        }
+                    }
+                    debt.Installments = debt.Installments.Where(x => x.Date.Month == month.Value && x.Date.Year == year).ToList();
                     debt.Installments = debt.Installments.OrderBy(x => x.InstallmentNumber).ToList();
                 }
                 response.Add(cardModel);

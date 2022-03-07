@@ -162,8 +162,11 @@ namespace MicroServices.WebDebts.Application.Services
 
         public async Task<List<GetSumbyMonthResponse>> GetSumByMonth(GetSumByMonthRequest getSumByMonthRequest, Guid userId)
         {
-            var startDate = new DateTime(getSumByMonthRequest.Year.Value, getSumByMonthRequest.Month.Value, 31, 0, 0, 0);
-            var finishDate = DateTime.UtcNow.AddMonths(3);
+            var startDate = new DateTime(getSumByMonthRequest.Year.Value, 
+                                         getSumByMonthRequest.Month.Value, 
+                                         DateTime.DaysInMonth(getSumByMonthRequest.Year.Value, getSumByMonthRequest.Month.Value), 0, 0, 0);
+
+            var finishDate = DateTime.UtcNow.AddMonths(4);
 
             var installments = await _debtRepository.GetSumPerMonthAsync(getSumByMonthRequest.Month, getSumByMonthRequest.Year, userId);
 

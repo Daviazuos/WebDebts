@@ -82,6 +82,19 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             return walletControllers.Id;
 
         }
+
+        public override async Task<Wallet> FindByIdAsync(Guid id)
+        {
+            if (id == Guid.Empty)
+                return null;
+
+            var wallet = await _dbSet.Where(x => x.Id == id).Include(x => x.User).FirstOrDefaultAsync();
+
+            if (wallet == null)
+                return null;
+
+            return wallet;
+        }
     }
 
 }
