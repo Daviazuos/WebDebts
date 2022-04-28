@@ -182,7 +182,7 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             return resultQuery;
         }
 
-        public async Task UpdateInstallmentAsync(Guid id, Status status, DateTime? paymentDate, Guid? walletId)
+        public async Task UpdateInstallmentAsync(Guid id, Status status, DateTime? paymentDate)
         {
             var installment = await _context.Debt.SelectMany(x => x.Installments.Where(x => x.Id == id)).FirstOrDefaultAsync();
 
@@ -191,10 +191,6 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             if (status == Status.Paid)
             {
                 installment.PaymentDate = paymentDate.Value;
-                if (walletId.HasValue)
-                {
-                    installment.WalletMonthControllerId = walletId.Value;
-                }
             }
             else
                 installment.PaymentDate = null;

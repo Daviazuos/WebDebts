@@ -125,7 +125,6 @@ namespace MicroServices.WebDebts.Application.Service
                     Id = installment.Id,
                     InstallmentsStatus = Status.Paid,
                     PaymentDate = payCardResponseModel.PaymentDate,
-                    WalletId = payCardResponseModel.WalletId
                 };
 
                 await _debtsApplicationService.PutInstallments(putInstallments, userId);

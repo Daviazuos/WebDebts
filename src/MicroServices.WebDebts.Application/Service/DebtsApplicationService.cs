@@ -266,26 +266,14 @@ namespace MicroServices.WebDebts.Application.Services
                 {
                     var installments = await _debtRepository.FilterInstallmentsAsync(1, 9999, null, putInstallmentsRequest.CardId.Value, putInstallmentsRequest.PaymentDate.Value.Month, putInstallmentsRequest.PaymentDate.Value.Year, null, null, null, userId);
                     
-                    var walletCardId = await _walletRepository.SubtractWalletMonthControllers(putInstallmentsRequest.WalletId.Value,
-                                                                                      putInstallmentsRequest.PaymentDate.Value.Month,
-                                                                                      putInstallmentsRequest.PaymentDate.Value.Year,
-                                                                                      installments.Items.Sum(x => x.Value));
-
                     foreach (var debt in installments.Items)
                     {
-                        await _debtRepository.UpdateInstallmentAsync(debt.Id, putInstallmentsRequest.InstallmentsStatus, putInstallmentsRequest.PaymentDate, walletCardId);
+                        await _debtRepository.UpdateInstallmentAsync(debt.Id, putInstallmentsRequest.InstallmentsStatus, putInstallmentsRequest.PaymentDate);
                     }
-
                 }
                 else
                 {
-                    var installment = await _debtRepository.GetInstallmentById(putInstallmentsRequest.Id.Value);
-                    var walletId = await _walletRepository.SubtractWalletMonthControllers(putInstallmentsRequest.WalletId.Value,
-                                                                                          putInstallmentsRequest.PaymentDate.Value.Month,
-                                                                                          putInstallmentsRequest.PaymentDate.Value.Year,
-                                                                                          installment.Value);
-
-                    await _debtRepository.UpdateInstallmentAsync(putInstallmentsRequest.Id.Value, putInstallmentsRequest.InstallmentsStatus, putInstallmentsRequest.PaymentDate, walletId);
+                    await _debtRepository.UpdateInstallmentAsync(putInstallmentsRequest.Id.Value, putInstallmentsRequest.InstallmentsStatus, putInstallmentsRequest.PaymentDate);
                 }
                 
             }
@@ -293,22 +281,16 @@ namespace MicroServices.WebDebts.Application.Services
             {
                 if (putInstallmentsRequest.CardId.HasValue)
                 {
-                    var installments = await _debtRepository.FilterInstallmentsAsync(1, 9999, null, cardId: putInstallmentsRequest.CardId.Value, putInstallmentsRequest.PaymentDate.Value.Month, putInstallmentsRequest.PaymentDate.Value.Year, null, null, DebtType.Card, userId);
-
-                    var monthControllerId = installments.Items.Select(x => x.WalletMonthControllerId.Value).FirstOrDefault();
-                    
-                    await _walletRepository.AddWalletMonthControllers(monthControllerId, installments.Items.Sum(x => x.Value));
+                    var installments = await _debtRepository.FilterInstallmentsAsync(1, 9999, null, cardId: putInstallmentsRequest.CardId.Value, putInstallmentsRequest.PaymentDate.Value.Month, putInstallmentsRequest.PaymentDate.Value.Year, null, null, DebtType.Card, userId);                    
 
                     foreach (var debt in installments.Items)
                     {
-                        await _debtRepository.UpdateInstallmentAsync(debt.Id, putInstallmentsRequest.InstallmentsStatus, putInstallmentsRequest.PaymentDate, null);
+                        await _debtRepository.UpdateInstallmentAsync(debt.Id, putInstallmentsRequest.InstallmentsStatus, putInstallmentsRequest.PaymentDate);
                     }
                 }
                 else
                 {
-                    var installment = await _debtRepository.GetInstallmentById(putInstallmentsRequest.Id.Value);
-                    await _walletRepository.AddWalletMonthControllers(installment.WalletMonthControllerId.Value, installment.Value);
-                    await _debtRepository.UpdateInstallmentAsync(putInstallmentsRequest.Id.Value, putInstallmentsRequest.InstallmentsStatus, putInstallmentsRequest.PaymentDate, null);
+                    await _debtRepository.UpdateInstallmentAsync(putInstallmentsRequest.Id.Value, putInstallmentsRequest.InstallmentsStatus, putInstallmentsRequest.PaymentDate);
                 }
             }
             
