@@ -264,7 +264,7 @@ namespace MicroServices.WebDebts.Application.Services
             {
                 if (putInstallmentsRequest.CardId.HasValue)
                 {
-                    var installments = await _debtRepository.FilterInstallmentsAsync(1, 9999, null, putInstallmentsRequest.CardId.Value, putInstallmentsRequest.PaymentDate.Value.Month, putInstallmentsRequest.PaymentDate.Value.Year, null, null, null, userId);
+                    var installments = await _debtRepository.FilterInstallmentsAsync(1, 9998, null, putInstallmentsRequest.CardId.Value, putInstallmentsRequest.PaymentDate.Value.Month, putInstallmentsRequest.PaymentDate.Value.Year, null, null, null, userId);
                     
                     foreach (var debt in installments.Items)
                     {
