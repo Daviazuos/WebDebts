@@ -1,0 +1,11 @@
+﻿using System;
+using static MicroServices.WebDebts.Application.Models.EnumAppModel;
+
+namespace MicroServices.WebDebts.Application.Models
+{
+    public class GetAnaliticsRequest
+    {
+        public int Month { get; set; }
+        public int Year { get; set; }
+    }
+}

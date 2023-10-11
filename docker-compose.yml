@@ -1,0 +1,18 @@
+version: "3.7"
+
+services:
+    db:
+        image: postgres:12
+
+        environment:
+            PGDATA: /var/lib/postgresql/data1/pgdata
+        ports:
+            - 5432:5432
+        environment:
+            POSTGRES_PASSWORD: "admin"
+            POSTGRES_USER: "admin"
+        volumes:
+            - db-data:/var/lib/postgresql/data1/pgdata
+            
+volumes:
+    db-data:
