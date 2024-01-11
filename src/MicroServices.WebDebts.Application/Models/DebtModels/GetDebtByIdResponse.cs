@@ -12,6 +12,7 @@ namespace MicroServices.WebDebts.Application.Models
         public decimal Value { get; set; }
         public int NumberOfInstallments { get; set; }
         public int? PaidInstallment { get; set; }
+        public string? CardName { get; set; }
         public DateTime Date { get; set; }
         public DebtTypeApp DebtType { get; set; }
         public DebtInstallmentTypeApp DebtInstallmentType { get; set; }

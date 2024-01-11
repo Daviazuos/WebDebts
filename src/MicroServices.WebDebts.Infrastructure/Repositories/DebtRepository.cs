@@ -49,7 +49,7 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
 
         public async Task<PaginatedList<Debt>> FindDebtAsync(int pageNumber,  int pageSize, string name, decimal? value, DateTime? startDate, DateTime? finishDate, DebtInstallmentType? debtInstallmentType, DebtType? debtType, string category, Guid userId, bool? isGoal)
         {
-            var query = _dbSet.Include(x => x.Installments).Include(x => x.DebtCategory);
+            var query = _dbSet.Include(x => x.Installments).Include(x => x.DebtCategory).Include(x => x.Card);
 
             var resultQuery = DebtsFilters(query, name, value, startDate, finishDate, debtInstallmentType, debtType, category, isGoal);
 
@@ -173,19 +173,31 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             var totalItems = resultQuery.Count();
             var totalPages = Convert.ToInt32(totalItems / pageSize + (totalItems % pageSize > 0 ? 1 : 0));
 
-            var resultFilter = await resultQuery.OrderBy(x => x.BuyDate)
-                                                .ThenBy(x => x.Id)
-                                                .Skip(skipNumber)
-                                                .Take(pageSize)
-                                                .ToListAsync();
+            var resultFilter = new List<Installments>();
 
+            if (cardId.HasValue)
+            {
+                resultFilter = await resultQuery.OrderByDescending(x => x.BuyDate)
+                                                   .ThenBy(x => x.Id)
+                                                   .Skip(skipNumber)
+                                                   .Take(pageSize)
+                                                   .ToListAsync();
+            }else
+            {
+                resultFilter = await resultQuery.OrderBy(x => x.Date)
+                                                   .ThenBy(x => x.Id)
+                                                   .Skip(skipNumber)
+                                                   .Take(pageSize)
+                                                   .ToListAsync();
+            }
+            
             return new PaginatedList<Installments>
             {
                 CurrentPage = pageNumber,
                 Items = resultFilter,
                 TotalItems = totalItems,
                 TotalPages = totalPages
-            };
+            };            
         }
 
         private static IQueryable<Installments> InstallmentsFilters(IQueryable<Installments> resultQuery, int? month, int? year, Status? status)

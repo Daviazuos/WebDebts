@@ -182,16 +182,17 @@ namespace MicroServices.WebDebts.Application.Services
                                                                       userId,
                                                                       filterInstallmentsRequest.IsGoal);
 
-            var installmentsApp = debts.Items.Select( x => new FilterInstallmentsResponse { 
-                                                                            Date = x.Date, 
-                                                                            DebtName = x.Debt?.Name,
-                                                                            Id = x.Id,
-                                                                            InstallmentNumber = x.InstallmentNumber,
-                                                                            PaymentDate = x.PaymentDate,
-                                                                            Status = (EnumAppModel.StatusApp)x.Status,
-                                                                            Value = x.Value,
-                                                                            Category = x.Debt?.DebtCategory?.Name
-            }).OrderBy(x => x.InstallmentNumber);
+            var installmentsApp = debts.Items.Select(x => new FilterInstallmentsResponse
+            {
+                Date = x.Date,
+                DebtName = x.Debt?.Name,
+                Id = x.Id,
+                InstallmentNumber = x.InstallmentNumber,
+                PaymentDate = x.PaymentDate,
+                Status = (EnumAppModel.StatusApp)x.Status,
+                Value = x.Value,
+                Category = x.Debt?.DebtCategory?.Name
+            });
 
             return new PaginatedList<FilterInstallmentsResponse>
             {
