@@ -23,7 +23,7 @@ namespace MicroServices.WebDebts.Application.Services
         Task<PaginatedList<FilterInstallmentsResponse>> FilterInstallments(FilterInstallmentsRequest filterInstallmentsRequest, Guid userId);
         Task PutInstallments(PutInstallmentsRequest putInstallmentsRequest, Guid userId);
         Task<List<GetSumbyMonthResponse>> GetSumByMonth(GetSumByMonthRequest getSumByMonthRequest, Guid userId);
-        Task EditDebt(Guid id, CreateDebtAppModel createDebtsRequest, Guid userId);
+        Task EditDebt(Guid id, UpdateDebtAppModel createDebtsRequest, Guid userId);
         Task<List<GetCategoryRequest>> GetCategories(Guid userId);
         Task<GenericResponse> CreateCategory(CreateCategoryRequest createCategoryRequest, Guid userId);
         Task<List<GetDebtCategoryResponse>> GetDebtCategories(FilterDebtsCategoriesRequest filterDebtsCategoriesRequest, Guid userId);
@@ -77,15 +77,18 @@ namespace MicroServices.WebDebts.Application.Services
             var user = await _userRepository.FindByIdAsync(userId);
             var category = await _categoryRepository.FindByIdAsync(createDebtsRequest.CategoryId);
 
-            var debt = createDebtsRequest.ToCreateModel();
-            debt.User = user;
-            debt.DebtCategory = category;
+            foreach (var debtValue in createDebtsRequest.Values)
+            {
+                var debt = createDebtsRequest.ToCreateModel();
+                debt.User = user;
+                debt.DebtCategory = category;
+                debt.Value = debtValue;
+                var id = Guid.NewGuid();
+                await _debtsServices.CreateDebtAsync(debt, DebtType.Simple, id, userId);
+                await _unitOfWork.CommitAsync();
+            }
 
-            var id = Guid.NewGuid();
-            await _debtsServices.CreateDebtAsync(debt, DebtType.Simple, id, userId);
-            await _unitOfWork.CommitAsync();
-            
-            return new GenericResponse { Id = debt.Id };
+            return new GenericResponse { Id = Guid.NewGuid() };
         }
 
         public async Task DeletePerson(DeleteDebtByIdRequest deleteDebtByIdRequest)
@@ -111,7 +114,7 @@ namespace MicroServices.WebDebts.Application.Services
             await _unitOfWork.CommitAsync();
         }
 
-        public async Task EditDebt(Guid id, CreateDebtAppModel createDebtsRequest, Guid userId)
+        public async Task EditDebt(Guid id, UpdateDebtAppModel createDebtsRequest, Guid userId)
         {
             var category = await _categoryRepository.FindByIdAsync(createDebtsRequest.CategoryId);
 

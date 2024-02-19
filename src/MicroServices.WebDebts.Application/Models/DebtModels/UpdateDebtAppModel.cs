@@ -4,10 +4,9 @@ using static MicroServices.WebDebts.Application.Models.EnumAppModel;
 
 namespace MicroServices.WebDebts.Application.Models.DebtModels
 {
-    public class CreateDebtAppModel
+    public class UpdateDebtAppModel
     {
         public string Name { get; set; }
-        public List<decimal> Values { get; set; }
         public decimal Value { get; set; }
         public DateTime Date { get; set; }
         public int NumberOfInstallments { get; set; }

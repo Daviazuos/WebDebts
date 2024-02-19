@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using MicroServices.WebDebts.Application.Models.DebtModels;
 using MicroServices.WebDebts.Domain.Models;
+using System.Linq;
 
 namespace MicroServices.WebDebts.Application.Models.Mappers
 {

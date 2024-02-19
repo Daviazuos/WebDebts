@@ -46,7 +46,7 @@ namespace MicroServices.WebDebts.Api.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> EditDebtAsync([FromQuery] Guid id, [FromBody] CreateDebtAppModel createDebtsRequest)
+        public async Task<ActionResult> EditDebtAsync([FromQuery] Guid id, [FromBody] UpdateDebtAppModel createDebtsRequest)
         {
             var _userId = Guid.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Sid));
 

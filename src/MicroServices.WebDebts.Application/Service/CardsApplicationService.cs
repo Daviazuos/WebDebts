@@ -51,17 +51,24 @@ namespace MicroServices.WebDebts.Application.Service
             var user = await _userRepository.FindByIdAsync(userId);
             var category = await _categoryRepository.FindByIdAsync(debtsAppModel.CategoryId);
 
-            var debt = debtsAppModel.ToCreateModel();
-            debt.User = user;
-            debt.DebtCategory = category;
+            foreach (var debtValue in debtsAppModel.Values)
+            {
+                var debt = debtsAppModel.ToCreateModel();
 
-            var debtCard = await _cardService.LinkCard(debt, cardId);
-            var id = Guid.NewGuid();
+                debt.Value = debtValue;
+                debt.User = user;
+                debt.DebtCategory = category;
 
-            await _debtsService.CreateDebtAsync(debtCard, DebtType.Card, id, userId);
-            await _unitOfWork.CommitAsync();
+                var debtCard = await _cardService.LinkCard(debt, cardId);
 
-            return new GenericResponse { Id = debt.Id };
+                var id = Guid.NewGuid();
+                await _debtsService.CreateDebtAsync(debtCard, DebtType.Card, id, userId);
+                await _unitOfWork.CommitAsync();
+
+                await _unitOfWork.CommitAsync();
+            }
+
+            return new GenericResponse { Id = Guid.NewGuid() };
         }
 
         public async Task<GenericResponse> CreateCard(CardAppModel cardAppModel, Guid userId)
