@@ -191,5 +191,19 @@ namespace MicroServices.WebDebts.Api.Controllers
 
             return new OkObjectResult(response);
         }
+
+        [HttpPut, Route("Installments")]
+        [Authorize]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult> EditInstallmentsAsync([FromQuery] Guid id, InstallmentsAppModel installmentsAppModel)
+        {
+            var _userId = Guid.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Sid));
+
+            await _debtsApplicationService.EditInstallments(id, installmentsAppModel, _userId);
+
+            return new NoContentResult();
+        }
     }
 }

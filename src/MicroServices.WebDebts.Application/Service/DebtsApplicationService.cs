@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static MicroServices.WebDebts.Application.Models.EnumAppModel;
 
 namespace MicroServices.WebDebts.Application.Services
 {
@@ -28,6 +29,7 @@ namespace MicroServices.WebDebts.Application.Services
         Task<GenericResponse> CreateCategory(CreateCategoryRequest createCategoryRequest, Guid userId);
         Task<List<GetDebtCategoryResponse>> GetDebtCategories(FilterDebtsCategoriesRequest filterDebtsCategoriesRequest, Guid userId);
         Task<GetAnaliticsResponse> GetAnaliticsByMonth(GetAnaliticsRequest getAnaliticsRequest, Guid userId);
+        Task EditInstallments(Guid id, InstallmentsAppModel installmentsAppModel, Guid userId);
     }
 
     public class DebtsApplicationService : IDebtsApplicationService
@@ -132,6 +134,19 @@ namespace MicroServices.WebDebts.Application.Services
             }
             debt.Value = debt.Installments.Sum(x => x.Value);
 
+            await _unitOfWork.CommitAsync();
+        }
+
+        public async Task EditInstallments(Guid id, InstallmentsAppModel installmentsAppModel, Guid userId)
+        {
+            var installment = await _debtRepository.GetInstallmentById(id);
+
+            installment.Date = installmentsAppModel.Date;
+            installment.PaymentDate = installmentsAppModel.PaymentDate;
+            installment.InstallmentNumber = installmentsAppModel.InstallmentNumber;
+            installment.Value = installmentsAppModel.Value;
+
+            await _debtRepository.EditInstallmentAsync(installment);
             await _unitOfWork.CommitAsync();
         }
 

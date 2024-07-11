@@ -274,5 +274,11 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
 
             return result;
        }
+
+
+        public async Task EditInstallmentAsync(Installments installments)
+        {
+            _dbSetInstallment.Update(installments);
+        }
     }
 }

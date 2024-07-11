@@ -54,6 +54,7 @@ namespace MicroServices.WebDebts.Application.Service
 
             wallet.Name = walletAppModel.Name;
             wallet.WalletStatus = walletAppModel.WalletStatus;
+            wallet.Value = walletAppModel.Value;
 
             foreach (var installment in wallet.WalletInstallments)
             {
