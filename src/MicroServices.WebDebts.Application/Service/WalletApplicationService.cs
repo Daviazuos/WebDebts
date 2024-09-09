@@ -18,6 +18,7 @@ namespace MicroServices.WebDebts.Application.Service
         Task<GenericResponse> UpdateWallet(Guid id, WalletAppModel walletAppModel);
         Task<IEnumerable<GetWalletByIdResponse>> GetWallets(WalletStatus? walletStatus, int month, int year, Guid userId);
         Task DeleteWallet(Guid id);
+        Task<GenericResponse> UpdateWalletInstallment(Guid id, WalletInstallmentAppModel walletInstallmentAppModel);
     }
     public class WalletApplicationService : IWalletApplicationService
     {
@@ -94,9 +95,11 @@ namespace MicroServices.WebDebts.Application.Service
                         Id = wallet.Id,
                         InstallmentNumber = walletInstallment.InstallmentNumber,
                         Date = walletInstallment.Date,
-                        Name = wallet.Name,
+                        Name = walletInstallment.Name != null? walletInstallment.Name : wallet.Name,
                         NumberOfInstallments = wallet.NumberOfInstallments,
                         Value = walletInstallment.Value,
+                        ReceivedStatus = walletInstallment.ReceivedStatus,
+                        InstallmentId = walletInstallment.Id,
                         WalletInstallmentType = wallet.WalletInstallmentType,
                         WalletStatus = wallet.WalletStatus
                     });
@@ -109,6 +112,17 @@ namespace MicroServices.WebDebts.Application.Service
         public async Task DeleteWallet(Guid id)
         {
             await _walletService.DeleteWalletAsync(id);
+        }
+
+        public async Task<GenericResponse> UpdateWalletInstallment(Guid id, WalletInstallmentAppModel walletInstallmentAppModel)
+        {
+            var walletInstallment = await _walletRepository.GetInstallmentById(id);
+
+            walletInstallment.ReceivedStatus = (bool)walletInstallmentAppModel.ReceivedStatus;
+
+            await _unitOfWork.CommitAsync();
+
+            return new GenericResponse { Id = walletInstallment.Id };
         }
     }
 }

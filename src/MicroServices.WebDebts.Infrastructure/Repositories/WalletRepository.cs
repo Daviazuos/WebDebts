@@ -16,10 +16,12 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
     {
         private readonly DataContext _context;
         private DbSet<Wallet> _dbSet;
+        private DbSet<WalletInstallments> _dbSetInstallment;
 
         public WalletRepository(DataContext context) : base(context)
         {
             _dbSet = context.Set<Wallet>();
+            _dbSetInstallment = context.Set<WalletInstallments>();
             _context = context;
         }
 
@@ -80,6 +82,11 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
         public async Task<Wallet> GetWalletByIdAsync(Guid id)
         {
            return await _dbSet.Where(x => x.Id == id).Include(x => x.WalletInstallments).FirstOrDefaultAsync();
+        }
+
+        public async Task<WalletInstallments> GetInstallmentById(Guid id)
+        {
+            return await _dbSetInstallment.FirstAsync(x => x.Id == id);
         }
     }
 

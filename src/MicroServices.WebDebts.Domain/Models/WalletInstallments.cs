@@ -9,5 +9,7 @@ namespace MicroServices.WebDebts.Domain.Models
         public decimal Value { get; set; }
         public Wallet Wallet { get; set; }
         public User User { get; set; }
+        public bool ReceivedStatus  { get; set; }
+        public string Name { get; set; }
     }
 }

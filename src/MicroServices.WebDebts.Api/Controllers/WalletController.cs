@@ -78,6 +78,18 @@ namespace MicroServices.WebDebts.Api.Controllers
             return new OkObjectResult(walletId);
         }
 
+        [HttpPut, Route("UpdateWalletInstallment")]
+        [Authorize]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<GenericResponse>> UpdateWalletInstallmentAsync([FromQuery] Guid id, [FromBody] WalletInstallmentAppModel walletInstallmentAppModel)
+        {
+            var walletId = await _walletApplicationService.UpdateWalletInstallment(id, walletInstallmentAppModel);
+
+            return new OkObjectResult(walletId);
+        }
+
         [HttpDelete, Route("DeleteWallet")]
         [Authorize]
         [Consumes(MediaTypeNames.Application.Json)]

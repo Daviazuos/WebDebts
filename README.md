@@ -9,3 +9,4 @@ heroku container:push web -a web-debts
 heroku container:release web -a web-debts
 
 
+dotnet tool install --global dotnet-ef --version 6.0.0

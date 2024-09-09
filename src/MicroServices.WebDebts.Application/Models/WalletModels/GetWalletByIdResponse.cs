@@ -11,6 +11,8 @@ namespace MicroServices.WebDebts.Application.Models
         public DateTime Date { get; set; }
         public WalletStatus WalletStatus { get; set; }
         public WalletInstallmentType WalletInstallmentType { get; set; }
+        public bool? ReceivedStatus { get; set; }
+        public Guid InstallmentId { get; set; }
         public int? NumberOfInstallments { get; set; }
         public int InstallmentNumber { get; set; }
     }
