@@ -205,5 +205,17 @@ namespace MicroServices.WebDebts.Api.Controllers
 
             return new NoContentResult();
         }
+
+        [HttpDelete, Route("DeleteInstallment")]
+        [Authorize]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult> DeleteInstallmentAsync([FromQuery] Guid id)
+        {
+            await _debtsApplicationService.DeleteInstallment(id);
+
+            return NoContent();
+        }
     }
 }

@@ -30,6 +30,7 @@ namespace MicroServices.WebDebts.Application.Services
         Task<List<GetDebtCategoryResponse>> GetDebtCategories(FilterDebtsCategoriesRequest filterDebtsCategoriesRequest, Guid userId);
         Task<GetAnaliticsResponse> GetAnaliticsByMonth(GetAnaliticsRequest getAnaliticsRequest, Guid userId);
         Task EditInstallments(Guid id, InstallmentsAppModel installmentsAppModel, Guid userId);
+        Task DeleteInstallment(Guid id);
     }
 
     public class DebtsApplicationService : IDebtsApplicationService
@@ -91,6 +92,12 @@ namespace MicroServices.WebDebts.Application.Services
             }
 
             return new GenericResponse { Id = Guid.NewGuid() };
+        }
+
+        public async Task DeleteInstallment(Guid id)
+        {
+            await _debtRepository.DeleteInstallment(id);
+            await _unitOfWork.CommitAsync();
         }
 
         public async Task DeletePerson(DeleteDebtByIdRequest deleteDebtByIdRequest)
