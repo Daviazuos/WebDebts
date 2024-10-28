@@ -250,6 +250,15 @@ namespace MicroServices.WebDebts.Application.Services
             return categories;
         }
 
+        public class InstallmentDto
+        {
+            public string DebtName { get; set; }
+            public Guid Id { get; set; }
+            public string  Category { get; set; }
+            public Decimal Value { get; set; }
+
+        }
+
         public async Task<List<GetDebtCategoryResponse>> GetDebtCategories(FilterDebtsCategoriesRequest filterDebtsCategoriesRequest, Guid userId)
         {
             var installments = await _debtRepository.FilterInstallmentsAsync(1, 9999, null, filterDebtsCategoriesRequest.CardId, filterDebtsCategoriesRequest.Month, filterDebtsCategoriesRequest.Year, null, null, null, userId, null);
@@ -263,7 +272,14 @@ namespace MicroServices.WebDebts.Application.Services
                         Name = g.First().Debt.DebtCategory?.Name,
                         Value = g.Sum(s => s.Value),
                         ValueTotal = valueTotal,
-                        Percent = Math.Round(g.Sum(s => s.Value)/valueTotal * 100, 2)
+                        Percent = Math.Round(g.Sum(s => s.Value) / valueTotal * 100, 2),
+                        InstallmentsPerCategory = g.Select(installment => new InstallmentDto
+                        {
+                            DebtName = installment.Debt.Name,
+                            Id = installment.Id,
+                            Category = g.First().Debt.DebtCategory?.Name,
+                            Value = installment.Value,
+                        }).ToList()
                     }).ToList();
 
             return groupedCategories;

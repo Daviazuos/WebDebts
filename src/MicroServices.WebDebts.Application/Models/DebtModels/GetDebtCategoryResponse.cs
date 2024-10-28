@@ -1,4 +1,8 @@
-﻿using System;
+﻿using MicroServices.WebDebts.Domain.Models;
+using System;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using static MicroServices.WebDebts.Application.Services.DebtsApplicationService;
 
 namespace MicroServices.WebDebts.Application.Models
 {
@@ -13,5 +17,6 @@ namespace MicroServices.WebDebts.Application.Models
         public decimal ValueTotal { get; set; }
 
         public decimal Percent { get; set; }
+        public List<InstallmentDto> InstallmentsPerCategory { get; set; }
     }
 }
