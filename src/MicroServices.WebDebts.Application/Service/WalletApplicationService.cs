@@ -21,7 +21,7 @@ namespace MicroServices.WebDebts.Application.Service
         Task<IEnumerable<GetWalletByIdResponse>> GetWallets(WalletStatus? walletStatus, int month, int year, Guid userId);
         Task DeleteWallet(Guid id);
         Task<GenericResponse> UpdateWalletInstallment(Guid id, WalletInstallmentAppModel walletInstallmentAppModel);
-        Task<List<GetWalletResponsiblePartiesResponse>> GetResponsiblePartiesWallets(Guid responsiblePartyId, int month, int year);
+        Task<List<GetWalletResponsiblePartiesResponse>> GetResponsiblePartiesWallets(Guid? responsiblePartyId, int month, int year);
     }
     public class WalletApplicationService : IWalletApplicationService
     {
@@ -140,7 +140,7 @@ namespace MicroServices.WebDebts.Application.Service
             return new GenericResponse { Id = walletInstallment.Id };
         }
 
-        public async Task<List<GetWalletResponsiblePartiesResponse>> GetResponsiblePartiesWallets(Guid responsiblePartyId, int month, int year)
+        public async Task<List<GetWalletResponsiblePartiesResponse>> GetResponsiblePartiesWallets(Guid? responsiblePartyId, int month, int year)
         {
             var walletResponsibleParties = await _walletRepository.GetWalletResposibleParty(responsiblePartyId, month, year);
 

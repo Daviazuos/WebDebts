@@ -109,7 +109,7 @@ namespace MicroServices.WebDebts.Api.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<List<GetWalletResponsiblePartiesResponse>>> GetResponsiblePartiesWallets([FromQuery] Guid responsiblePartyId, int month, int year)
+        public async Task<ActionResult<List<GetWalletResponsiblePartiesResponse>>> GetResponsiblePartiesWallets([FromQuery] int month, int year, Guid? responsiblePartyId = null)
         {
             var response = await _walletApplicationService.GetResponsiblePartiesWallets(responsiblePartyId, month, year);
 

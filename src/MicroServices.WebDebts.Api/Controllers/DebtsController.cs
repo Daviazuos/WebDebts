@@ -224,9 +224,10 @@ namespace MicroServices.WebDebts.Api.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<List<GetDebtResponsiblePartiesResponse>>> GetResponsiblePartiesDebts([FromQuery] Guid responsiblePartyId, int month, int year)
+        public async Task<ActionResult<List<GetDebtResponsiblePartiesResponse>>> GetResponsiblePartiesDebts([FromQuery] int month, int year, Guid? responsiblePartyId = null)
         {
-            var response = await _debtsApplicationService.GetResponsiblePartiesDebts(responsiblePartyId, month, year);
+            var _userId = Guid.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Sid));
+            var response = await _debtsApplicationService.GetResponsiblePartiesDebts(responsiblePartyId, month, year, _userId);
 
             return new OkObjectResult(response);
         }

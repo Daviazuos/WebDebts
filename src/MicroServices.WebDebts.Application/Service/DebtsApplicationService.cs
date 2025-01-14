@@ -33,7 +33,7 @@ namespace MicroServices.WebDebts.Application.Services
         Task<GetAnaliticsResponse> GetAnaliticsByMonth(GetAnaliticsRequest getAnaliticsRequest, Guid userId);
         Task EditInstallments(Guid id, InstallmentsAppModel installmentsAppModel, Guid userId);
         Task DeleteInstallment(Guid id);
-        Task<List<GetDebtResponsiblePartiesResponse>> GetResponsiblePartiesDebts(Guid? responsiblePartyId, int month, int year);
+        Task<List<GetDebtResponsiblePartiesResponse>> GetResponsiblePartiesDebts(Guid? responsiblePartyId, int month, int year, Guid userId);
     }
 
     public class DebtsApplicationService : IDebtsApplicationService
@@ -422,10 +422,10 @@ namespace MicroServices.WebDebts.Application.Services
             await _unitOfWork.CommitAsync();
         }
 
-        public async Task<List<GetDebtResponsiblePartiesResponse>> GetResponsiblePartiesDebts(Guid? responsiblePartyId, int month, int year)
+        public async Task<List<GetDebtResponsiblePartiesResponse>> GetResponsiblePartiesDebts(Guid? responsiblePartyId, int month, int year, Guid userId)
         {
-            var debtsresponsibleParties = await _debtRepository.GetDebtResposibleParty(responsiblePartyId, month, year);
-            var walletResponsibleParties = await _walletRepository.GetWalletResposibleParty(responsiblePartyId, month, year);
+            var debtsresponsibleParties = await _debtRepository.GetDebtResposibleParty(responsiblePartyId, month, year, userId);
+            var walletResponsibleParties = await _walletRepository.GetWalletResposibleParty(responsiblePartyId, month, year, userId);
 
             var response = debtsresponsibleParties
                 .GroupBy(d => d.ResponsibleParty.Id)

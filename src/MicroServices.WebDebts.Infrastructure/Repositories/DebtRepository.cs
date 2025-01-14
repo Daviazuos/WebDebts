@@ -282,13 +282,15 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             _dbSetInstallment.Update(installments);
         }
 
-        public async Task<List<Debt>> GetDebtResposibleParty(Guid? responsiblePartyId, int month, int year)
+        public async Task<List<Debt>> GetDebtResposibleParty(Guid? responsiblePartyId, int month, int year, Guid userId)
         {
             var debtResponsibleParty = _dbSet.Include(x => x.ResponsibleParty).Include(x => x.Installments).Where(x => x.ResponsibleParty != null);
             if (responsiblePartyId.HasValue)
             {
-                debtResponsibleParty.Where(x => x.ResponsibleParty.Id == responsiblePartyId.Value);
+                debtResponsibleParty = debtResponsibleParty.Where(x => x.ResponsibleParty.Id == responsiblePartyId.Value);
             }
+
+            debtResponsibleParty = debtResponsibleParty.Where(x => x.User.Id == userId);
 
             await debtResponsibleParty.ToListAsync();
 

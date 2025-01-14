@@ -89,12 +89,36 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             return await _dbSetInstallment.FirstAsync(x => x.Id == id);
         }
 
+        public async Task<List<Wallet>> GetWalletResposibleParty(Guid? responsiblePartyId, int month, int year, Guid userId)
+        {
+            var walletResponsibleParty = _dbSet.Include(x => x.ResponsibleParty).Include(x => x.WalletInstallments).Where(x => x.ResponsibleParty != null);
+            if (responsiblePartyId.HasValue)
+            {
+                walletResponsibleParty = walletResponsibleParty.Where(x => x.ResponsibleParty.Id == responsiblePartyId.Value);
+            }
+
+            walletResponsibleParty = walletResponsibleParty.Where(x => x.User.Id == userId);
+
+            await walletResponsibleParty.ToListAsync();
+
+            var result = new List<Wallet>();
+
+            foreach (var wallet in walletResponsibleParty)
+            {
+                var instalments = wallet.WalletInstallments.Where(x => x.Date.Month == month && x.Date.Year <= year).ToList();
+                wallet.WalletInstallments = instalments;
+                result.Add(wallet);
+            }
+
+            return result;
+        }
+
         public async Task<List<Wallet>> GetWalletResposibleParty(Guid? responsiblePartyId, int month, int year)
         {
             var walletResponsibleParty = _dbSet.Include(x => x.ResponsibleParty).Include(x => x.WalletInstallments).Where(x => x.ResponsibleParty != null);
             if (responsiblePartyId.HasValue)
             {
-                walletResponsibleParty.Where(x => x.ResponsibleParty.Id == responsiblePartyId.Value);
+                walletResponsibleParty = walletResponsibleParty.Where(x => x.ResponsibleParty.Id == responsiblePartyId.Value);
             }
 
             await walletResponsibleParty.ToListAsync();
