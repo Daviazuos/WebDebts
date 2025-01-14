@@ -13,12 +13,22 @@ namespace MicroServices.WebDebts.Application.Models.Mappers
 
         internal static IMapper Mapper { get; }
 
-        public static WalletAppModel ToModel(this Wallet entity)
+        public static WalletAppModel ToAppModel(this Wallet entity)
         {
             return Mapper.Map<WalletAppModel>(entity);
         }
 
+        public static CreateWalletAppModel ToModel(this Wallet entity)
+        {
+            return Mapper.Map<CreateWalletAppModel>(entity);
+        }
+
         public static Wallet ToEntity(this WalletAppModel model)
+        {
+            return Mapper.Map<Wallet>(model);
+        }
+
+        public static Wallet ToAppEntity(this CreateWalletAppModel model)
         {
             return Mapper.Map<Wallet>(model);
         }

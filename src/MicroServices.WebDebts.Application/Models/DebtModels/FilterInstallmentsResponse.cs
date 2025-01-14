@@ -10,6 +10,7 @@ namespace MicroServices.WebDebts.Application.Models
         public DateTime Date { get; set; }
         public DateTime? PaymentDate { get; set; }
         public int InstallmentNumber { get; set; }
+        public int NumberOfInstallments { get; set; }
         public decimal Value { get; set; }
         public StatusApp Status { get; set; }
         public string? Category { get; set; }

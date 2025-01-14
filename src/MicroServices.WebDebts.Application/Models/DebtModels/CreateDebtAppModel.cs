@@ -14,5 +14,7 @@ namespace MicroServices.WebDebts.Application.Models.DebtModels
         public DebtInstallmentTypeApp DebtInstallmentType { get; set; }
         public Guid CategoryId { get; set; }
         public bool IsGoal { get; set; } = false;
+        public Guid? ResponsiblePartyId { get; set; }
+
     }
 }

@@ -82,11 +82,11 @@ namespace MicroServices.WebDebts.Api.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<List<GetCardsResponse>>> FilterCardAsync([FromQuery] GetCardByIdRequest getCardByIdRequest)
+        public async Task<ActionResult<GetCardsResponse>> FilterCardAsync([FromQuery] GetCardByIdRequest getCardByIdRequest)
         {
             var _userId = Guid.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Sid));
 
-            var card = await _cardsApplicationService.FilterCardsAsync(getCardByIdRequest.Id, getCardByIdRequest.Month, getCardByIdRequest.Year, _userId);
+            var card = await _cardsApplicationService.FilterCardsAsync(getCardByIdRequest.PageNumber, getCardByIdRequest.PageSize, getCardByIdRequest.Id, getCardByIdRequest.Month, getCardByIdRequest.Year, _userId, getCardByIdRequest.WithNoDebts);
 
             return new OkObjectResult(card);
         }

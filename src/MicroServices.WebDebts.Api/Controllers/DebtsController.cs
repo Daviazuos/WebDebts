@@ -1,5 +1,6 @@
 ﻿using MicroServices.WebDebts.Application.Models;
 using MicroServices.WebDebts.Application.Models.DebtModels;
+using MicroServices.WebDebts.Application.Models.WalletModels;
 using MicroServices.WebDebts.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -216,6 +217,18 @@ namespace MicroServices.WebDebts.Api.Controllers
             await _debtsApplicationService.DeleteInstallment(id);
 
             return NoContent();
+        }
+
+        [HttpGet, Route("GetResponsiblePartiesDebts")]
+        [Authorize]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<List<GetDebtResponsiblePartiesResponse>>> GetResponsiblePartiesDebts([FromQuery] Guid responsiblePartyId, int month, int year)
+        {
+            var response = await _debtsApplicationService.GetResponsiblePartiesDebts(responsiblePartyId, month, year);
+
+            return new OkObjectResult(response);
         }
     }
 }

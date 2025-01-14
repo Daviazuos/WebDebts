@@ -1,5 +1,6 @@
 ﻿using MicroServices.WebDebts.Domain.Interfaces.Repository;
 using MicroServices.WebDebts.Domain.Models;
+using MicroServices.WebDebts.Domain.Models.Commom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace MicroServices.WebDebts.Domain.Service
         Task<Guid> CreateCardAsync(Card card);
         Task<Debt> LinkCard(Debt debt, Guid Id);
         Task<Card> GetAllByIdAsync(Guid id);
-        Task<List<Card>> FilterCardsAsync(Guid? id, int? month, int? year, Guid userId);
+        Task<PaginatedList<Card>> FilterCardsAsync(int pageNumber, int pageSize, Guid? id, int? month, int? year, Guid userId, bool withNoDebts);
     }
     public class CardService : ICardService
     {
@@ -37,9 +38,9 @@ namespace MicroServices.WebDebts.Domain.Service
             return await _cardRepository.GetCardById(id);
         }
 
-        public async Task<List<Card>> FilterCardsAsync(Guid? id, int? month, int? year, Guid userId)
+        public async Task<PaginatedList<Card>> FilterCardsAsync(int pageNumber, int pageSize, Guid? id, int? month, int? year, Guid userId, bool withNoDebts)
         {
-            var cards = await _cardRepository.FindCardValuesByIdAsync(id, userId, month, year);
+            var cards = await _cardRepository.FindCardValuesByIdAsync(pageNumber, pageSize, id, userId, month, year, withNoDebts);
 
             return cards;
         }

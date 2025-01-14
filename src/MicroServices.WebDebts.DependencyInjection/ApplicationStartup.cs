@@ -31,6 +31,7 @@ namespace MicroServices.WebDebts.DependencyInjection
             services.AddScoped<IUserApplicationService, UserApplicationService>();
             services.AddScoped<ITokenApplicationService, TokenApplicationService>();
             services.AddScoped<ISpendingCeilingApplicationService, SpendingCeilingApplicationService>();
+            services.AddScoped<IResponsiblePartyService, ResponsiblePartyService>();
         }
 
         public static void RegisterDomain(IServiceCollection services)
@@ -49,6 +50,7 @@ namespace MicroServices.WebDebts.DependencyInjection
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<ISpendingCeilingRepository, SpendingCeilingRepository>();
+            services.AddScoped<IResponsiblePartyRepository, ResponsiblePartyRepository>();
         }
     }
 }

@@ -19,6 +19,8 @@ namespace MicroServices.WebDebts.Infrastructure.Database.Postgres
         public DbSet<SpendingCeiling> SpendingCeiling { get; set; }
         public DbSet<Goal> Goal { get; set; }
         public DbSet<WalletInstallments> WalletInstallments { get; set; }
+        public DbSet<ResponsibleParty> ResponsibleParty { get; set; }
+        
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

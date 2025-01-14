@@ -14,6 +14,7 @@ namespace MicroServices.WebDebts.Application.Models
         public DebtInstallmentTypeApp DebtInstallmentType { get; set; }
         public List<InstallmentsAppModel> Installments { get; set; }
         public bool IsGoal { get; set; }
+        public ResponsiblePartyResponse? ResponsibleParty { get; set; }
 
     }
 }

@@ -13,6 +13,7 @@ namespace MicroServices.WebDebts.Application.Models.Mappers
                 .ForMember(x => x.Value, opts => opts.MapFrom(x => x.Value))
                 .ForMember(x => x.NumberOfInstallments, opts => opts.MapFrom(x => x.NumberOfInstallments))
                 .ForMember(x => x.DebtInstallmentType, opts => opts.MapFrom(x => x.DebtInstallmentType))
+                .ForMember(x => x.ResponsibleParty, opts => opts.MapFrom(x => x.ResponsibleParty))
                 .IgnoreAllSourcePropertiesWithAnInaccessibleSetter()
                 .ReverseMap();
 
@@ -27,10 +28,15 @@ namespace MicroServices.WebDebts.Application.Models.Mappers
                 .ForMember(x => x.DebtType, opts => opts.MapFrom(x => x.DebtType))
                 .ForMember(x => x.Category, opts => opts.MapFrom(x => x.DebtCategory.Name))
                 .ForMember(x => x.CardName, opts => opts.MapFrom(x => x.Card.Name))
+                .ForMember(x => x.ResponsibleParty, opts => opts.MapFrom(x => x.ResponsibleParty))
                 .IgnoreAllSourcePropertiesWithAnInaccessibleSetter()
                 .ReverseMap();
             
             this.CreateMap<Installments, InstallmentsAppModel>()
+                .ReverseMap();
+
+            this.CreateMap<ResponsibleParty, ResponsiblePartyResponse>()
+                .IgnoreAllSourcePropertiesWithAnInaccessibleSetter()
                 .ReverseMap();
 
             this.CreateMap<Debt, CreateDebtAppModel>()

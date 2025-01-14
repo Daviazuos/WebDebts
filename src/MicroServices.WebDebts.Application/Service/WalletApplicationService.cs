@@ -8,17 +8,20 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MicroServices.WebDebts.Domain.Models.Enum;
+using MicroServices.WebDebts.Application.Models.WalletModels;
+using MicroServices.WebDebts.Domain.Models;
 
 namespace MicroServices.WebDebts.Application.Service
 {
     public interface IWalletApplicationService
     {
-        Task<GenericResponse> CreateWallet(WalletAppModel walletAppModel, Guid userId);
+        Task<GenericResponse> CreateWallet(CreateWalletAppModel walletAppModel, Guid userId);
         Task<GetWalletByIdResponse> GetWalletById(Guid id);
-        Task<GenericResponse> UpdateWallet(Guid id, WalletAppModel walletAppModel);
+        Task<GenericResponse> UpdateWallet(Guid id, CreateWalletAppModel walletAppModel);
         Task<IEnumerable<GetWalletByIdResponse>> GetWallets(WalletStatus? walletStatus, int month, int year, Guid userId);
         Task DeleteWallet(Guid id);
         Task<GenericResponse> UpdateWalletInstallment(Guid id, WalletInstallmentAppModel walletInstallmentAppModel);
+        Task<List<GetWalletResponsiblePartiesResponse>> GetResponsiblePartiesWallets(Guid responsiblePartyId, int month, int year);
     }
     public class WalletApplicationService : IWalletApplicationService
     {
@@ -26,21 +29,33 @@ namespace MicroServices.WebDebts.Application.Service
         private readonly IWalletService _walletService;
         private readonly IWalletRepository _walletRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IResponsiblePartyRepository _responsiblePartyRepository;
         
-        public WalletApplicationService(IUnitOfWork unitOfWork, IWalletService walletService, IUserRepository userRepository, IWalletRepository walletRepository)
+        public WalletApplicationService(IUnitOfWork unitOfWork, IWalletService walletService, IUserRepository userRepository, IWalletRepository walletRepository, IResponsiblePartyRepository responsiblePartyRepository)
         {
             _unitOfWork = unitOfWork;
             _walletService = walletService;
             _userRepository = userRepository;
             _walletRepository = walletRepository;
+            _responsiblePartyRepository = responsiblePartyRepository;
         }
 
-        public async Task<GenericResponse> CreateWallet(WalletAppModel walletAppModel, Guid userId)
+        public async Task<GenericResponse> CreateWallet(CreateWalletAppModel walletAppModel, Guid userId)
         {
             var user = await _userRepository.FindByIdAsync(userId);
 
-            var wallet = walletAppModel.ToEntity();
+            var wallet = walletAppModel.ToAppEntity();
             wallet.User = user;
+
+            if (walletAppModel.ResponsiblePartyId.HasValue)
+            {
+                var responsibleParty = await _responsiblePartyRepository.FindByIdAsync(walletAppModel.ResponsiblePartyId.Value);
+                wallet.ResponsibleParty = responsibleParty;
+            }
+            else
+            {
+                wallet.ResponsibleParty = null;
+            }
             
             var id = Guid.NewGuid();
             await _walletService.CreateWalletAsync(wallet, id, userId);
@@ -49,7 +64,7 @@ namespace MicroServices.WebDebts.Application.Service
             return new GenericResponse { Id = wallet.Id };
         }
 
-        public async Task<GenericResponse> UpdateWallet(Guid id, WalletAppModel walletAppModel)
+        public async Task<GenericResponse> UpdateWallet(Guid id, CreateWalletAppModel walletAppModel)
         {
             var wallet = await _walletService.GetWalletByIdAsync(id);
 
@@ -123,6 +138,21 @@ namespace MicroServices.WebDebts.Application.Service
             await _unitOfWork.CommitAsync();
 
             return new GenericResponse { Id = walletInstallment.Id };
+        }
+
+        public async Task<List<GetWalletResponsiblePartiesResponse>> GetResponsiblePartiesWallets(Guid responsiblePartyId, int month, int year)
+        {
+            var walletResponsibleParties = await _walletRepository.GetWalletResposibleParty(responsiblePartyId, month, year);
+
+            var response = walletResponsibleParties.GroupBy(d => d.ResponsibleParty.Id)
+                                    .Select(
+                                        g => new GetWalletResponsiblePartiesResponse
+                                        {
+                                            Name = g.First().ResponsibleParty.Name,
+                                            Value = g.Sum(s => s.WalletInstallments.First().Value),
+                                            WalletAppModels = g.Select(x => x.ToAppModel()).ToList()
+                                        }).ToList();
+            return response;
         }
     }
 }

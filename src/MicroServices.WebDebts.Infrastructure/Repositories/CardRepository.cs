@@ -1,6 +1,8 @@
 ﻿using MicroServices.WebDebts.Domain.Interfaces.Repository;
 using MicroServices.WebDebts.Domain.Models;
+using MicroServices.WebDebts.Domain.Models.Commom;
 using MicroServices.WebDebts.Infrastructure.Database.Postgres;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -34,17 +36,46 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             return resultDebts;
         }
 
-        public async Task<List<Card>> FindCardValuesByIdAsync(Guid? id, Guid userId, int? month, int? year)
+        public async Task<PaginatedList<Card>> FindCardValuesByIdAsync(int pageNumber, int pageSize, Guid? id, Guid userId, int? month, int? year, bool withNoDebts)
         {
-            var resultFilter = _dbSet.Include(x => x.DebtValues)
-                                     .ThenInclude(x => x.Installments.Where(x => x.Date.Month == month.Value && x.Date.Year == year.Value)).Where(x => x.User.Id == userId).Select(x => x);
+            var resultQuery = _dbSet.Include(x => x.DebtValues)
+                                     .ThenInclude(x => x.Installments)
+                                     .Where(x => x.User.Id == userId && x.DebtValues.Count > 0)
+                                     .Select(x => x);
 
             if (id.HasValue)
-            {   
-                resultFilter = resultFilter.Where(x => x.Id == id.Value);
+            {
+                resultQuery = resultQuery.Where(x => x.Id == id.Value);
             }
 
-            return await resultFilter.ToListAsync();
+            if (!withNoDebts)
+            {
+                resultQuery = resultQuery.Where(x =>
+                               x.DebtValues.Any(dv =>
+                               dv.Installments.Any(inst =>
+                               inst.Date.Month == month.Value && inst.Date.Year == year.Value
+                            )
+                            )
+            );
+            }
+
+            
+
+            var skipNumber = pageNumber > 0 ? ((pageNumber - 1) * pageSize) : 0;
+            var totalItems = resultQuery.Count();
+            var totalPages = Convert.ToInt32(totalItems / pageSize + (totalItems % pageSize > 0 ? 1 : 0));
+
+            var resultFilter = await resultQuery.Skip(skipNumber)
+                                                .Take(pageSize)
+                                                .ToListAsync();
+
+            return new PaginatedList<Card>
+            {
+                CurrentPage = pageNumber,
+                Items = resultFilter,
+                TotalItems = totalItems,
+                TotalPages = totalPages
+            };
         }
 
         public async Task<Card> GetCardById(Guid id)

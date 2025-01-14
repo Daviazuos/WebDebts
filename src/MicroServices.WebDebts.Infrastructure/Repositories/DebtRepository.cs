@@ -47,7 +47,7 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             _dbSetInstallment.Remove(installmentToRemove);
         }
 
-        public async Task<PaginatedList<Debt>> FindDebtAsync(int pageNumber,  int pageSize, string name, decimal? value, DateTime? startDate, DateTime? finishDate, DebtInstallmentType? debtInstallmentType, DebtType? debtType, string category, Guid userId, bool? isGoal)
+        public async Task<PaginatedList<Debt>> FindDebtAsync(int pageNumber, int pageSize, string name, decimal? value, DateTime? startDate, DateTime? finishDate, DebtInstallmentType? debtInstallmentType, DebtType? debtType, string category, Guid userId, bool? isGoal)
         {
             var query = _dbSet.Include(x => x.Installments).Include(x => x.DebtCategory).Include(x => x.Card);
 
@@ -60,13 +60,13 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             var totalPages = Convert.ToInt32(totalItems / pageSize + (totalItems % pageSize > 0 ? 1 : 0));
 
             var resultFilter = await resultQuery.OrderByDescending(x => x.BuyDate)
-                                                .Skip(skipNumber)   
+                                                .Skip(skipNumber)
                                                 .Take(pageSize)
                                                 .ToListAsync();
 
             var result = new List<Debt>();
 
-            
+
 
             if (startDate.HasValue || finishDate.HasValue)
             {
@@ -106,11 +106,11 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
         }
 
         private static IQueryable<Debt> DebtsFilters(IQueryable<Debt> resultQuery,
-                                                                      string name, 
-                                                                      decimal? value, 
-                                                                      DateTime? startDate, 
-                                                                      DateTime? finishDate, 
-                                                                      DebtInstallmentType? debtInstallmentType, 
+                                                                      string name,
+                                                                      decimal? value,
+                                                                      DateTime? startDate,
+                                                                      DateTime? finishDate,
+                                                                      DebtInstallmentType? debtInstallmentType,
                                                                       DebtType? debtType,
                                                                       string category,
                                                                       bool? isGoal)
@@ -166,7 +166,7 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             {
                 installments = installments.Where(x => x.Debt.DebtType == debtType.Value);
             }
-            
+
             var resultQuery = InstallmentsFilters(installments, month, year, status);
 
             var skipNumber = pageNumber > 0 ? ((pageNumber - 1) * pageSize) : 0;
@@ -182,7 +182,8 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
                                                    .Skip(skipNumber)
                                                    .Take(pageSize)
                                                    .ToListAsync();
-            }else
+            }
+            else
             {
                 resultFilter = await resultQuery.OrderBy(x => x.Date)
                                                    .ThenBy(x => x.Id)
@@ -190,14 +191,14 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
                                                    .Take(pageSize)
                                                    .ToListAsync();
             }
-            
+
             return new PaginatedList<Installments>
             {
                 CurrentPage = pageNumber,
                 Items = resultFilter,
                 TotalItems = totalItems,
                 TotalPages = totalPages
-            };            
+            };
         }
 
         private static IQueryable<Installments> InstallmentsFilters(IQueryable<Installments> resultQuery, int? month, int? year, Status? status)
@@ -273,12 +274,35 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
 
 
             return result;
-       }
+        }
 
 
         public async Task EditInstallmentAsync(Installments installments)
         {
             _dbSetInstallment.Update(installments);
+        }
+
+        public async Task<List<Debt>> GetDebtResposibleParty(Guid? responsiblePartyId, int month, int year)
+        {
+            var debtResponsibleParty = _dbSet.Include(x => x.ResponsibleParty).Include(x => x.Installments).Where(x => x.ResponsibleParty != null);
+            if (responsiblePartyId.HasValue)
+            {
+                debtResponsibleParty.Where(x => x.ResponsibleParty.Id == responsiblePartyId.Value);
+            }
+
+            await debtResponsibleParty.ToListAsync();
+
+            var result = new List<Debt>();
+
+            foreach (var debt in debtResponsibleParty)
+            {
+                var instalments = debt.Installments.Where(x => x.Date.Month == month && x.Date.Year <= year).ToList();
+                debt.Installments = instalments;
+                result.Add(debt);
+            }
+
+
+            return result;
         }
     }
 }

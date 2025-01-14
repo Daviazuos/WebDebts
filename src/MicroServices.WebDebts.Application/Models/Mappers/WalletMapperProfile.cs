@@ -12,6 +12,10 @@ namespace MicroServices.WebDebts.Application.Models.Mappers
                 .IgnoreAllSourcePropertiesWithAnInaccessibleSetter()
                 .ReverseMap();
 
+            this.CreateMap<Wallet, CreateWalletAppModel>()
+                .IgnoreAllSourcePropertiesWithAnInaccessibleSetter()
+                .ReverseMap();
+
             this.CreateMap<Wallet, GetWalletByIdResponse>()
                 .IgnoreAllSourcePropertiesWithAnInaccessibleSetter()
                 .ReverseMap();

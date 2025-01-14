@@ -19,5 +19,6 @@ namespace MicroServices.WebDebts.Domain.Interfaces.Repository
         Task<Installments> GetInstallmentById(Guid installmentId);
         Task DeleteInstallment(Guid Id);
         Task<List<Debt>> GetSumByCategoryMonth(int month, int year, Guid userId, Guid categoryID);
+        Task<List<Debt>> GetDebtResposibleParty(Guid? responsiblePartyId, int month, int year);
     }
 }

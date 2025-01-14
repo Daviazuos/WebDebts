@@ -5,9 +5,11 @@ using MicroServices.WebDebts.Application.Services;
 using MicroServices.WebDebts.Domain.Common;
 using MicroServices.WebDebts.Domain.Interfaces.Repository;
 using MicroServices.WebDebts.Domain.Models;
+using MicroServices.WebDebts.Domain.Models.Commom;
 using MicroServices.WebDebts.Domain.Models.Enum;
 using MicroServices.WebDebts.Domain.Service;
 using MicroServices.WebDebts.Domain.Services;
+using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +22,7 @@ namespace MicroServices.WebDebts.Application.Service
         Task<GenericResponse> CreateCard(CardAppModel cardAppModel, Guid userId);
         Task<GenericResponse> AddValuesCard(CreateDebtAppModel createDebtAppModel, Guid cardId, Guid userId);
         Task<GetCardsResponse> GetCardById(Guid id);
-        Task<List<GetCardsResponse>> FilterCardsAsync(Guid? id, int? month, int? year, Guid userId);
+        Task<PaginatedList<GetCardsResponse>> FilterCardsAsync(int pageNumber, int pageSize, Guid? id, int? month, int? year, Guid userId, bool withNoDebts);
         Task DeleteCardAsync(Guid cardId);
         Task PayCardDebtsAsync(PayCardResponseModel payCardResponseModel, Guid userId);
         Task EditCardAsync(CardAppModel cardAppModel, Guid userId);
@@ -92,10 +94,10 @@ namespace MicroServices.WebDebts.Application.Service
             return cardAppResult;
         }
 
-        public async Task<List<GetCardsResponse>> FilterCardsAsync(Guid? id, int? month, int? year, Guid userId)
+        public async Task<PaginatedList<GetCardsResponse>> FilterCardsAsync(int pageNumber, int pageSize, Guid? id, int? month, int? year, Guid userId, bool withNoDebts)
         {
-            var card = await _cardService.FilterCardsAsync(id, month, year, userId);
-            var cardAppResult = card.Select(x => x.ToResponseModel()).ToList();
+            var card = await _cardService.FilterCardsAsync(pageNumber, pageSize, id, month, year, userId, withNoDebts);
+            var cardAppResult = card.Items.Select(x => x.ToResponseModel()).ToList();
           
             var response = new List<GetCardsResponse>();
             foreach (var cardModel in cardAppResult)
@@ -106,8 +108,15 @@ namespace MicroServices.WebDebts.Application.Service
                     debt.Installments = debt.Installments.OrderBy(x => x.InstallmentNumber).ToList();
                 }
                 response.Add(cardModel);
-            }            
-            return response;
+            }
+
+            return new PaginatedList<GetCardsResponse>
+            {
+                CurrentPage = pageNumber,
+                Items = response,
+                TotalItems = card.TotalItems,
+                TotalPages = card.TotalPages
+            };
         }
 
         public async Task DeleteCardAsync(Guid cardId)

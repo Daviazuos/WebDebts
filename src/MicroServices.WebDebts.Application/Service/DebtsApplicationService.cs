@@ -1,6 +1,7 @@
 ﻿using MicroServices.WebDebts.Application.Models;
 using MicroServices.WebDebts.Application.Models.DebtModels;
 using MicroServices.WebDebts.Application.Models.Mappers;
+using MicroServices.WebDebts.Application.Models.WalletModels;
 using MicroServices.WebDebts.Domain.Interfaces.Repository;
 using MicroServices.WebDebts.Domain.Models;
 using MicroServices.WebDebts.Domain.Models.Commom;
@@ -10,6 +11,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.Xml;
 using System.Threading.Tasks;
 using static MicroServices.WebDebts.Application.Models.EnumAppModel;
 
@@ -31,6 +33,7 @@ namespace MicroServices.WebDebts.Application.Services
         Task<GetAnaliticsResponse> GetAnaliticsByMonth(GetAnaliticsRequest getAnaliticsRequest, Guid userId);
         Task EditInstallments(Guid id, InstallmentsAppModel installmentsAppModel, Guid userId);
         Task DeleteInstallment(Guid id);
+        Task<List<GetDebtResponsiblePartiesResponse>> GetResponsiblePartiesDebts(Guid? responsiblePartyId, int month, int year);
     }
 
     public class DebtsApplicationService : IDebtsApplicationService
@@ -49,7 +52,9 @@ namespace MicroServices.WebDebts.Application.Services
 
         private readonly ICategoryRepository _categoryRepository;
 
-        public DebtsApplicationService(IDebtsService debtsServices, IUnitOfWork unitOfWork, IDebtRepository debtRepository, IWalletRepository walletRepository, ICardRepository cardRepository, IUserRepository userRepository, ICategoryRepository categoryRepository)
+        private readonly IResponsiblePartyRepository _responsiblePartyRepository;
+
+        public DebtsApplicationService(IDebtsService debtsServices, IUnitOfWork unitOfWork, IDebtRepository debtRepository, IWalletRepository walletRepository, ICardRepository cardRepository, IUserRepository userRepository, ICategoryRepository categoryRepository, IResponsiblePartyRepository responsiblePartyRepository)
         {
             _debtsServices = debtsServices;
             _debtRepository = debtRepository;
@@ -58,6 +63,7 @@ namespace MicroServices.WebDebts.Application.Services
             _cardRepository = cardRepository;
             _userRepository = userRepository;
             _categoryRepository = categoryRepository;
+            _responsiblePartyRepository = responsiblePartyRepository;
         }
 
         public async Task<GenericResponse> CreateCategory(CreateCategoryRequest createCategoryRequest, Guid userId)
@@ -79,13 +85,24 @@ namespace MicroServices.WebDebts.Application.Services
         {
             var user = await _userRepository.FindByIdAsync(userId);
             var category = await _categoryRepository.FindByIdAsync(createDebtsRequest.CategoryId);
-
+            
             foreach (var debtValue in createDebtsRequest.Values)
             {
                 var debt = createDebtsRequest.ToCreateModel();
                 debt.User = user;
                 debt.DebtCategory = category;
                 debt.Value = debtValue;
+
+                if (createDebtsRequest.ResponsiblePartyId.HasValue)
+                {
+                    var responsibleParty = await _responsiblePartyRepository.FindByIdAsync(createDebtsRequest.ResponsiblePartyId.Value);
+                    debt.ResponsibleParty = responsibleParty;
+                }
+                else
+                {
+                    debt.ResponsibleParty = null;
+                }
+
                 var id = Guid.NewGuid();
                 await _debtsServices.CreateDebtAsync(debt, DebtType.Simple, id, userId);
                 await _unitOfWork.CommitAsync();
@@ -108,7 +125,7 @@ namespace MicroServices.WebDebts.Application.Services
             foreach (var installment in debt.Installments.ToList())
             {
                 if (installment.Status != Status.Paid)
-                {   
+                {
                     await _debtRepository.DeleteInstallment(installment.Id);
                 }
             }
@@ -119,7 +136,7 @@ namespace MicroServices.WebDebts.Application.Services
             {
                 await _debtRepository.DeleteDebt(debt.Id);
             }
-            
+
             await _unitOfWork.CommitAsync();
         }
 
@@ -161,11 +178,11 @@ namespace MicroServices.WebDebts.Application.Services
         {
             var debt = await _debtsServices.FilterDebtsAsync(filterDebtRequest.PageNumber,
                                                              filterDebtRequest.PageSize,
-                                                             filterDebtRequest.Name, 
-                                                             filterDebtRequest.Value, 
+                                                             filterDebtRequest.Name,
+                                                             filterDebtRequest.Value,
                                                              filterDebtRequest.StartDate,
                                                              filterDebtRequest.FInishDate,
-                                                             (DebtInstallmentType?)filterDebtRequest.DebtInstallmentType, 
+                                                             (DebtInstallmentType?)filterDebtRequest.DebtInstallmentType,
                                                              (DebtType?)filterDebtRequest.DebtType,
                                                              filterDebtRequest.Category,
                                                              userId,
@@ -199,7 +216,7 @@ namespace MicroServices.WebDebts.Application.Services
                                                                       filterInstallmentsRequest.PageSize,
                                                                       filterInstallmentsRequest.DebtId,
                                                                       filterInstallmentsRequest.CardId,
-                                                                      filterInstallmentsRequest.Month, 
+                                                                      filterInstallmentsRequest.Month,
                                                                       filterInstallmentsRequest.Year,
                                                                       (DebtInstallmentType?)filterInstallmentsRequest.DebtInstallmentType,
                                                                       (Status?)filterInstallmentsRequest.StatusApp,
@@ -213,6 +230,7 @@ namespace MicroServices.WebDebts.Application.Services
                 DebtName = x.Debt?.Name,
                 Id = x.Id,
                 InstallmentNumber = x.InstallmentNumber,
+                NumberOfInstallments = x.Debt.NumberOfInstallments,
                 PaymentDate = x.PaymentDate,
                 Status = (EnumAppModel.StatusApp)x.Status,
                 Value = x.Value,
@@ -232,7 +250,7 @@ namespace MicroServices.WebDebts.Application.Services
         {
             var wallet = await _walletRepository.GetWallets(new WalletStatus(), getAnaliticsRequest.Month, getAnaliticsRequest.Year, userId);
             var installments = await _debtRepository.GetSumPerMonthAsync(getAnaliticsRequest.Month, getAnaliticsRequest.Year, userId);
-            var cards = await _cardRepository.FindCardValuesByIdAsync(null, userId, getAnaliticsRequest.Month, getAnaliticsRequest.Year);
+            var cards = await _cardRepository.FindCardValuesByIdAsync(1, 9999, null, userId, getAnaliticsRequest.Month, getAnaliticsRequest.Year, true);
 
             var sumWallet = wallet.Sum(x => x.Value);
             var sumInstallments = installments.Sum(x => x.Value);
@@ -246,7 +264,7 @@ namespace MicroServices.WebDebts.Application.Services
         public async Task<List<GetCategoryRequest>> GetCategories(Guid userId)
         {
             var response = await _categoryRepository.GetCategories(userId);
-            var categories = response.Select(x => new GetCategoryRequest { Id=x.Id, Name=x.Name }).ToList();
+            var categories = response.Select(x => new GetCategoryRequest { Id = x.Id, Name = x.Name }).ToList();
             return categories;
         }
 
@@ -254,7 +272,7 @@ namespace MicroServices.WebDebts.Application.Services
         {
             public string DebtName { get; set; }
             public Guid Id { get; set; }
-            public string  Category { get; set; }
+            public string Category { get; set; }
             public Decimal Value { get; set; }
 
         }
@@ -324,9 +342,9 @@ namespace MicroServices.WebDebts.Application.Services
                 }
                 else
                 {
-                    groupedWallets.Add(key, new List<Decimal> () { walletInstallment.Value });
+                    groupedWallets.Add(key, new List<Decimal>() { walletInstallment.Value });
                 }
-                
+
             }
 
 
@@ -347,7 +365,7 @@ namespace MicroServices.WebDebts.Application.Services
             };
 
             var defaultValue = new List<decimal>();
-            
+
             var sumValues = installments.GroupBy(d => new { d.Date.Month, d.Date.Year })
                                     .Select(
                                         g => new GetSumbyMonthResponse
@@ -371,7 +389,7 @@ namespace MicroServices.WebDebts.Application.Services
                 if (putInstallmentsRequest.CardId.HasValue)
                 {
                     var installments = await _debtRepository.FilterInstallmentsAsync(1, 9998, null, putInstallmentsRequest.CardId.Value, putInstallmentsRequest.PaymentDate.Value.Month, putInstallmentsRequest.PaymentDate.Value.Year, null, null, null, userId, null);
-                    
+
                     foreach (var debt in installments.Items)
                     {
                         await _debtRepository.UpdateInstallmentAsync(debt.Id, putInstallmentsRequest.InstallmentsStatus, putInstallmentsRequest.PaymentDate);
@@ -381,13 +399,13 @@ namespace MicroServices.WebDebts.Application.Services
                 {
                     await _debtRepository.UpdateInstallmentAsync(putInstallmentsRequest.Id.Value, putInstallmentsRequest.InstallmentsStatus, putInstallmentsRequest.PaymentDate);
                 }
-                
+
             }
             else
             {
                 if (putInstallmentsRequest.CardId.HasValue)
                 {
-                    var installments = await _debtRepository.FilterInstallmentsAsync(1, 9999, null, cardId: putInstallmentsRequest.CardId.Value, putInstallmentsRequest.PaymentDate.Value.Month, putInstallmentsRequest.PaymentDate.Value.Year, null, null, DebtType.Card, userId, null);                    
+                    var installments = await _debtRepository.FilterInstallmentsAsync(1, 9999, null, cardId: putInstallmentsRequest.CardId.Value, putInstallmentsRequest.PaymentDate.Value.Month, putInstallmentsRequest.PaymentDate.Value.Year, null, null, DebtType.Card, userId, null);
 
                     foreach (var debt in installments.Items)
                     {
@@ -399,9 +417,57 @@ namespace MicroServices.WebDebts.Application.Services
                     await _debtRepository.UpdateInstallmentAsync(putInstallmentsRequest.Id.Value, putInstallmentsRequest.InstallmentsStatus, putInstallmentsRequest.PaymentDate);
                 }
             }
-            
-            
+
+
             await _unitOfWork.CommitAsync();
         }
+
+        public async Task<List<GetDebtResponsiblePartiesResponse>> GetResponsiblePartiesDebts(Guid? responsiblePartyId, int month, int year)
+        {
+            var debtsresponsibleParties = await _debtRepository.GetDebtResposibleParty(responsiblePartyId, month, year);
+            var walletResponsibleParties = await _walletRepository.GetWalletResposibleParty(responsiblePartyId, month, year);
+
+            var response = debtsresponsibleParties
+                .GroupBy(d => d.ResponsibleParty.Id)
+                .Select(g =>
+                {
+                    var firstDebt = g.FirstOrDefault(); // Verifica se há elementos
+                    if (firstDebt == null)
+                        return null;
+
+                    var walletGroup = walletResponsibleParties.GroupBy(d => d.ResponsibleParty);
+
+                    // Soma todos os valores de dívida no grupo
+                    var debtValue = g.Sum(s => s.Installments.FirstOrDefault()?.Value ?? 0);
+
+                    // Soma todos os valores correspondentes no grupo de carteira
+                    var walletValue = walletGroup
+                        .Where(x => x.Key.Id == firstDebt.ResponsibleParty.Id)
+                        .SelectMany(x => x)
+                        .Sum(x => x.WalletInstallments.Sum(x => x.Value)); // Somar todos os valores
+
+                    // Lista todos os modelos de carteira
+                    var walletAppModels = walletGroup
+                        .Where(x => x.Key.Id == firstDebt.ResponsibleParty.Id)
+                        .SelectMany(x => x)
+                        .Select(x => x.ToAppModel())
+                        .ToList();
+
+                    return new GetDebtResponsiblePartiesResponse
+                    {
+                        Name = firstDebt.ResponsibleParty.Name,
+                        DebtValue = debtValue,
+                        WalletValue = walletValue,
+                        DebtsAppModel = g.Select(x => x.ToModel()).ToList(),
+                        WalletAppModels = walletAppModels,
+                    };
+                })
+                .Where(response => response != null) // Remove itens nulos gerados pela validação
+                .ToList();
+
+            return response;
+        }
+
+
     }
 }

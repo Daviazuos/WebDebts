@@ -1,4 +1,5 @@
 ﻿using MicroServices.WebDebts.Domain.Models;
+using MicroServices.WebDebts.Domain.Models.Commom;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ namespace MicroServices.WebDebts.Domain.Interfaces.Repository
     {
         Task<Card> GetCardByName(string cardName, Guid userId);
         Task<Card> GetCardById(Guid id);
-        Task<List<Card>> FindCardValuesByIdAsync(Guid? id, Guid userId, int? month, int? year);
+        Task<PaginatedList<Card>> FindCardValuesByIdAsync(int pageNumber, int pageSize, Guid? id, Guid userId, int? month, int? year, bool withNoDebts);
         Task<List<Debt>> FilterCardsAsync(int? month, int? year);
     }
 }

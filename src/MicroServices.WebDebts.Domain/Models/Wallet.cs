@@ -17,5 +17,6 @@ namespace MicroServices.WebDebts.Domain.Models
         public DateTime? FinishAt {  get; set; }
         public List<WalletInstallments> WalletInstallments { get; set; }
         public User User { get; set; }
+        public ResponsibleParty? ResponsibleParty { get; set; }
     }
 }

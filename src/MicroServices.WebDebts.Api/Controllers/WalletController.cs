@@ -1,11 +1,13 @@
 ﻿using MicroServices.WebDebts.Application.Models;
 using MicroServices.WebDebts.Application.Models.DebtModels;
+using MicroServices.WebDebts.Application.Models.WalletModels;
 using MicroServices.WebDebts.Application.Service;
 using MicroServices.WebDebts.Domain.Models.Enum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.Net.Mime;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -31,7 +33,7 @@ namespace MicroServices.WebDebts.Api.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<GenericResponse>> CreateWalletAsync([FromBody] WalletAppModel walletAppModel)
+        public async Task<ActionResult<GenericResponse>> CreateWalletAsync([FromBody] CreateWalletAppModel walletAppModel)
         {
             var _userId = Guid.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Sid));
 
@@ -71,7 +73,7 @@ namespace MicroServices.WebDebts.Api.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<GenericResponse>> GetByIdAsync([FromQuery] Guid id, [FromBody] WalletAppModel walletAppModel)
+        public async Task<ActionResult<GenericResponse>> GetByIdAsync([FromQuery] Guid id, [FromBody] CreateWalletAppModel walletAppModel)
         {
             var walletId = await _walletApplicationService.UpdateWallet(id, walletAppModel);
 
@@ -100,6 +102,18 @@ namespace MicroServices.WebDebts.Api.Controllers
             await _walletApplicationService.DeleteWallet(id);
 
             return new OkResult();
+        }
+
+        [HttpGet, Route("GetResponsiblePartiesWallets")]
+        [Authorize]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<List<GetWalletResponsiblePartiesResponse>>> GetResponsiblePartiesWallets([FromQuery] Guid responsiblePartyId, int month, int year)
+        {
+            var response = await _walletApplicationService.GetResponsiblePartiesWallets(responsiblePartyId, month, year);
+
+            return new OkObjectResult(response);
         }
     }
 }

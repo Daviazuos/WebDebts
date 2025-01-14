@@ -18,6 +18,7 @@ namespace MicroServices.WebDebts.Domain.Models
         public List<Installments> Installments { get; set; }
         public Card Card { get; set; }
         public User User { get; set; }
+        public ResponsibleParty? ResponsibleParty { get; set; }
         public DebtCategory DebtCategory { get; set; }
     }
 

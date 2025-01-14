@@ -38,6 +38,10 @@ namespace MicroServices.WebDebts.Infrastructure.Database
             modelBuilder.Entity<WalletInstallments>().HasOne(d => d.User);
 
             modelBuilder.Entity<WalletInstallments>().HasOne(d => d.Wallet);
+
+            modelBuilder.Entity<Debt>().HasOne(x => x.ResponsibleParty);
+
+            modelBuilder.Entity<Wallet>().HasOne(x => x.ResponsibleParty);
         }
     }
 }
