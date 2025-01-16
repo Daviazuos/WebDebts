@@ -36,8 +36,9 @@ namespace MicroServices.WebDebts.Application.Service
         private readonly IUserRepository _userRepository;
         private readonly ICardRepository _cardRepository;
         private readonly ICategoryRepository _categoryRepository;
+        private readonly IResponsiblePartyRepository _responsiblePartyRepository;
 
-        public CardsApplicationService(IUnitOfWork unitOfWork, IDebtsService debtsService, ICardService cardService, IUserRepository userRepository, ICardRepository cardRepository, IDebtsApplicationService debtsApplicationService, ICategoryRepository categoryRepository)
+        public CardsApplicationService(IUnitOfWork unitOfWork, IDebtsService debtsService, ICardService cardService, IUserRepository userRepository, ICardRepository cardRepository, IDebtsApplicationService debtsApplicationService, ICategoryRepository categoryRepository, IResponsiblePartyRepository responsiblePartyRepository)
         {
             _unitOfWork = unitOfWork;
             _cardService = cardService;
@@ -46,6 +47,7 @@ namespace MicroServices.WebDebts.Application.Service
             _cardRepository = cardRepository;
             _debtsApplicationService = debtsApplicationService;
             _categoryRepository = categoryRepository;
+            _responsiblePartyRepository = responsiblePartyRepository;
         }
 
         public async Task<GenericResponse> AddValuesCard(CreateDebtAppModel debtsAppModel, Guid cardId, Guid userId)
@@ -60,6 +62,16 @@ namespace MicroServices.WebDebts.Application.Service
                 debt.Value = debtValue;
                 debt.User = user;
                 debt.DebtCategory = category;
+
+                if (debtsAppModel.ResponsiblePartyId.HasValue)
+                {
+                    var responsibleParty = await _responsiblePartyRepository.FindByIdAsync(debtsAppModel.ResponsiblePartyId.Value);
+                    debt.ResponsibleParty = responsibleParty;
+                }
+                else
+                {
+                    debt.ResponsibleParty = null;
+                }
 
                 var debtCard = await _cardService.LinkCard(debt, cardId);
 
