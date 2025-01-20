@@ -427,7 +427,10 @@ namespace MicroServices.WebDebts.Application.Services
             var debtsresponsibleParties = await _debtRepository.GetDebtResposibleParty(responsiblePartyId, month, year, userId);
             var walletResponsibleParties = await _walletRepository.GetWalletResposibleParty(responsiblePartyId, month, year, userId);
 
-            var response = debtsresponsibleParties
+            var response = new List<GetDebtResponsiblePartiesResponse>();
+
+            if (debtsresponsibleParties.Count > 0) {
+                response = debtsresponsibleParties
                 .GroupBy(d => d.ResponsibleParty.Id)
                 .Select(g =>
                 {
@@ -464,6 +467,31 @@ namespace MicroServices.WebDebts.Application.Services
                 })
                 .Where(response => response != null) // Remove itens nulos gerados pela validação
                 .ToList();
+            }else
+            {
+                response = walletResponsibleParties
+                 .GroupBy(d => d.ResponsibleParty.Id)
+                 .Select(g =>
+                 {
+                     var firstWallet = g.FirstOrDefault(); // Verifica se há elementos
+                     if (firstWallet == null)
+                         return null;
+
+                     // Soma todos os valores correspondentes no grupo de carteira
+                     var walletValue = g.Sum(s => s.WalletInstallments.FirstOrDefault()?.Value ?? 0);
+                     
+                     return new GetDebtResponsiblePartiesResponse
+                     {
+                         Name = firstWallet.ResponsibleParty.Name,
+                         DebtValue = new decimal(0),
+                         WalletValue = walletValue,
+                         DebtsAppModel = new List<DebtsAppModel>(),
+                         WalletAppModels = g.Select(x => x.ToAppModel()).ToList(),
+                     };
+                 })
+                 .Where(response => response != null) // Remove itens nulos gerados pela validação
+                 .ToList();
+            }
 
             return response;
         }
