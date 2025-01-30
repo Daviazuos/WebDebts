@@ -49,7 +49,7 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
 
         public async Task<PaginatedList<Debt>> FindDebtAsync(int pageNumber, int pageSize, string name, decimal? value, DateTime? startDate, DateTime? finishDate, DebtInstallmentType? debtInstallmentType, DebtType? debtType, string category, Guid userId, bool? isGoal)
         {
-            var query = _dbSet.Include(x => x.Installments).Include(x => x.DebtCategory).Include(x => x.Card);
+            var query = _dbSet.Include(x => x.Installments).Include(x => x.DebtCategory).Include(x => x.Card).Include(x => x.ResponsibleParty);
 
             var resultQuery = DebtsFilters(query, name, value, startDate, finishDate, debtInstallmentType, debtType, category, isGoal);
 
@@ -146,7 +146,7 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
         public async Task<PaginatedList<Installments>> FilterInstallmentsAsync(int pageNumber, int pageSize, Guid? debtId, Guid? cardId, int? month, int? year, DebtInstallmentType? debtInstallmentType, Status? status, DebtType? debtType, Guid userId, bool? isGoal)
         {
 
-            var installments = _context.Installments.Include(x => x.Debt).ThenInclude(x => x.DebtCategory).AsQueryable();
+            var installments = _context.Installments.Include(x => x.Debt).ThenInclude(x => x.DebtCategory).Include(x => x.Debt).ThenInclude(x => x.ResponsibleParty).AsQueryable();
 
             installments = installments.Where(x => x.User.Id == userId);
 
@@ -298,7 +298,7 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
 
             foreach (var debt in debtResponsibleParty)
             {
-                var instalments = debt.Installments.Where(x => x.Date.Month == month && x.Date.Year <= year).ToList();
+                var instalments = debt.Installments.Where(x => x.Date.Month == month && x.Date.Year == year).ToList();
                 debt.Installments = instalments;
                 result.Add(debt);
             }

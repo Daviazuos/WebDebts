@@ -15,5 +15,6 @@ namespace MicroServices.WebDebts.Application.Models
         public Guid InstallmentId { get; set; }
         public int? NumberOfInstallments { get; set; }
         public int InstallmentNumber { get; set; }
+        public string? ResponsiblePartyName { get; set; }
     }
 }

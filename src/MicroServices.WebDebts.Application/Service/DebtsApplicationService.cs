@@ -234,7 +234,8 @@ namespace MicroServices.WebDebts.Application.Services
                 PaymentDate = x.PaymentDate,
                 Status = (EnumAppModel.StatusApp)x.Status,
                 Value = x.Value,
-                Category = x.Debt?.DebtCategory?.Name
+                Category = x.Debt?.DebtCategory?.Name,
+                ResponsiblePartyName = x.Debt?.ResponsibleParty?.Name,
             });
 
             return new PaginatedList<FilterInstallmentsResponse>
@@ -427,41 +428,51 @@ namespace MicroServices.WebDebts.Application.Services
             var debtsresponsibleParties = await _debtRepository.GetDebtResposibleParty(responsiblePartyId, month, year, userId);
             var walletResponsibleParties = await _walletRepository.GetWalletResposibleParty(responsiblePartyId, month, year, userId);
 
+            var responsibleParties = await _responsiblePartyRepository.GetByUserId(userId);
+
             var response = new List<GetDebtResponsiblePartiesResponse>();
 
             if (debtsresponsibleParties.Count > 0) {
-                response = debtsresponsibleParties
-                .GroupBy(d => d.ResponsibleParty.Id)
+                response = responsibleParties
+                .GroupBy(d => d.Id)
                 .Select(g =>
                 {
-                    var firstDebt = g.FirstOrDefault(); // Verifica se há elementos
-                    if (firstDebt == null)
-                        return null;
+                    var walletGroup = walletResponsibleParties.GroupBy(w => w.ResponsibleParty);
+                    var debtGroup = debtsresponsibleParties.GroupBy(d => d.ResponsibleParty);
 
-                    var walletGroup = walletResponsibleParties.GroupBy(d => d.ResponsibleParty);
-
-                    // Soma todos os valores de dívida no grupo
-                    var debtValue = g.Sum(s => s.Installments.FirstOrDefault()?.Value ?? 0);
 
                     // Soma todos os valores correspondentes no grupo de carteira
                     var walletValue = walletGroup
-                        .Where(x => x.Key.Id == firstDebt.ResponsibleParty.Id)
+                        .Where(x => x.Key.Id == g.Key)
                         .SelectMany(x => x)
                         .Sum(x => x.WalletInstallments.Sum(x => x.Value)); // Somar todos os valores
 
                     // Lista todos os modelos de carteira
                     var walletAppModels = walletGroup
-                        .Where(x => x.Key.Id == firstDebt.ResponsibleParty.Id)
+                        .Where(x => x.Key.Id == g.Key)
                         .SelectMany(x => x)
                         .Select(x => x.ToAppModel())
                         .ToList();
 
+                    // Soma todos os valores correspondentes no grupo de carteira
+                    var debtValue = debtGroup
+                        .Where(x => x.Key.Id == g.Key)
+                        .SelectMany(x => x)
+                        .Sum(x => x.Installments.Sum(x => x.Value)); // Somar todos os valores
+
+                    // Lista todos os modelos de carteira
+                    var debtsAppModel = debtGroup
+                        .Where(x => x.Key.Id == g.Key)
+                        .SelectMany(x => x)
+                        .Select(x => x.ToModel())
+                        .ToList();
+
                     return new GetDebtResponsiblePartiesResponse
                     {
-                        Name = firstDebt.ResponsibleParty.Name,
+                        Name = g.First().Name,
                         DebtValue = debtValue,
                         WalletValue = walletValue,
-                        DebtsAppModel = g.Select(x => x.ToModel()).ToList(),
+                        DebtsAppModel = debtsAppModel,
                         WalletAppModels = walletAppModels,
                     };
                 })

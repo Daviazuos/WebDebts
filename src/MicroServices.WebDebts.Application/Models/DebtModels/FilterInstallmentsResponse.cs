@@ -14,5 +14,6 @@ namespace MicroServices.WebDebts.Application.Models
         public decimal Value { get; set; }
         public StatusApp Status { get; set; }
         public string? Category { get; set; }
+        public string? ResponsiblePartyName { get; set; }
     }
 }

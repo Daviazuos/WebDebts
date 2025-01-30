@@ -116,7 +116,8 @@ namespace MicroServices.WebDebts.Application.Service
                         ReceivedStatus = walletInstallment.ReceivedStatus,
                         InstallmentId = walletInstallment.Id,
                         WalletInstallmentType = wallet.WalletInstallmentType,
-                        WalletStatus = wallet.WalletStatus
+                        WalletStatus = wallet.WalletStatus,
+                        ResponsiblePartyName = wallet.ResponsibleParty?.Name,
                     });
                 }
             }

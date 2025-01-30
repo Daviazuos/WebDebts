@@ -30,12 +30,12 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
 
             if (!walletStatus.HasValue)
             {
-                var resultQuery = await _dbSet.Where(x => x.WalletStatus == walletStatus && x.User.Id == userId).ToListAsync();
+                var resultQuery = await _dbSet.Include(x => x.ResponsibleParty).Where(x => x.WalletStatus == walletStatus && x.User.Id == userId).ToListAsync();
                 return resultQuery;
             }
             else
             {
-                var resultQuery = await _dbSet.Include(x => x.WalletInstallments.Where(x => x.Date.Month == month && x.Date.Year == year))
+                var resultQuery = await _dbSet.Include(x => x.ResponsibleParty).Include(x => x.WalletInstallments.Where(x => x.Date.Month == month && x.Date.Year == year))
                     .Where(x => x.WalletStatus != WalletStatus.Disable && x.User.Id == userId).ToListAsync();
                 return resultQuery;
             }
@@ -105,7 +105,7 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
 
             foreach (var wallet in walletResponsibleParty)
             {
-                var instalments = wallet.WalletInstallments.Where(x => x.Date.Month == month && x.Date.Year <= year).ToList();
+                var instalments = wallet.WalletInstallments.Where(x => x.Date.Month == month && x.Date.Year == year).ToList();
                 wallet.WalletInstallments = instalments;
                 result.Add(wallet);
             }
