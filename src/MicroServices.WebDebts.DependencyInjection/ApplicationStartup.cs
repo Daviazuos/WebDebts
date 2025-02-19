@@ -51,6 +51,7 @@ namespace MicroServices.WebDebts.DependencyInjection
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<ISpendingCeilingRepository, SpendingCeilingRepository>();
             services.AddScoped<IResponsiblePartyRepository, ResponsiblePartyRepository>();
+            services.AddScoped<IDraftDebtRepository, DraftDebtRepository>();
         }
     }
 }

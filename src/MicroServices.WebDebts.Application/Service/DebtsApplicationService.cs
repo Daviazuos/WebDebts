@@ -10,8 +10,10 @@ using MicroServices.WebDebts.Domain.Services;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography.Xml;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static MicroServices.WebDebts.Application.Models.EnumAppModel;
 
@@ -34,6 +36,7 @@ namespace MicroServices.WebDebts.Application.Services
         Task EditInstallments(Guid id, InstallmentsAppModel installmentsAppModel, Guid userId);
         Task DeleteInstallment(Guid id);
         Task<List<GetDebtResponsiblePartiesResponse>> GetResponsiblePartiesDebts(Guid? responsiblePartyId, int month, int year, Guid userId);
+        Task<GenericResponse> CreateDraftDebtFromApp(AddDebtFromAppRequest addDebtFromAppRequest, Guid userId);
     }
 
     public class DebtsApplicationService : IDebtsApplicationService
@@ -54,7 +57,9 @@ namespace MicroServices.WebDebts.Application.Services
 
         private readonly IResponsiblePartyRepository _responsiblePartyRepository;
 
-        public DebtsApplicationService(IDebtsService debtsServices, IUnitOfWork unitOfWork, IDebtRepository debtRepository, IWalletRepository walletRepository, ICardRepository cardRepository, IUserRepository userRepository, ICategoryRepository categoryRepository, IResponsiblePartyRepository responsiblePartyRepository)
+        private readonly IDraftDebtRepository _draftDebtRepository;
+
+        public DebtsApplicationService(IDebtsService debtsServices, IUnitOfWork unitOfWork, IDebtRepository debtRepository, IWalletRepository walletRepository, ICardRepository cardRepository, IUserRepository userRepository, ICategoryRepository categoryRepository, IResponsiblePartyRepository responsiblePartyRepository, IDraftDebtRepository draftDebtRepository)
         {
             _debtsServices = debtsServices;
             _debtRepository = debtRepository;
@@ -64,6 +69,7 @@ namespace MicroServices.WebDebts.Application.Services
             _userRepository = userRepository;
             _categoryRepository = categoryRepository;
             _responsiblePartyRepository = responsiblePartyRepository;
+            _draftDebtRepository = draftDebtRepository;
         }
 
         public async Task<GenericResponse> CreateCategory(CreateCategoryRequest createCategoryRequest, Guid userId)
@@ -507,6 +513,45 @@ namespace MicroServices.WebDebts.Application.Services
             return response;
         }
 
+        public async Task<GenericResponse> CreateDraftDebtFromApp(AddDebtFromAppRequest addDebtFromAppRequest, Guid userId)
+        {
+            var user = await _userRepository.FindByIdAsync(userId);
 
+            var draftDebt = await ParseNubankNotification(addDebtFromAppRequest.notification, user);
+
+            await _draftDebtRepository.AddAsync(draftDebt);
+            await _unitOfWork.CommitAsync();
+            return new GenericResponse { Id = draftDebt.Id };
+        }
+
+        public async Task<DraftDebt> ParseNubankNotification(string message, User user)
+        {
+            var card = await _cardRepository.FindByIdAsync(new Guid("22a209e0-4164-4f7b-ab66-3d7e4ab689d7"));
+            var regex = new Regex(@"Compra aprovada: R\$(\d+,\d{2}) em (.*?) em (\d{2}/\d{2}/\d{4}) às (\d{2}:\d{2})");
+            var match = regex.Match(message);
+
+            if (!match.Success)
+            {
+                return null;
+            }
+
+            var value = decimal.Parse(match.Groups[1].Value, CultureInfo.GetCultureInfo("pt-BR"));
+            var name = match.Groups[2].Value;
+            var dateString = match.Groups[3].Value + " " + match.Groups[4].Value;
+            var buyDate = DateTime.ParseExact(dateString, "dd/MM/yyyy HH:mm", CultureInfo.GetCultureInfo("pt-BR"));
+
+            return new DraftDebt
+            {
+                Name = name,
+                Value = value,
+                DebtType = DebtType.Card,
+                Date = DateTime.UtcNow,
+                BuyDate = buyDate,
+                Card = card,
+                User = user,
+                OriginalText = message,
+                CreatedAt = DateTime.UtcNow,
+            };
+        }
     }
 }

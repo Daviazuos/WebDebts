@@ -231,5 +231,18 @@ namespace MicroServices.WebDebts.Api.Controllers
 
             return new OkObjectResult(response);
         }
+
+        [HttpPost, Route("AddDebtFromApp")]
+        [Authorize]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<GenericResponse>> AddDebtFromApp([FromBody] AddDebtFromAppRequest addDebtFromAppRequest)
+        {
+            var _userId = Guid.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Sid));
+            var debt = await _debtsApplicationService.CreateDraftDebtFromApp(addDebtFromAppRequest, _userId);
+
+            return new OkObjectResult(debt);
+        }
     }
 }

@@ -38,10 +38,7 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
 
         public async Task<PaginatedList<Card>> FindCardValuesByIdAsync(int pageNumber, int pageSize, Guid? id, Guid userId, int? month, int? year, bool withNoDebts)
         {
-            var resultQuery = _dbSet.Include(x => x.DebtValues)
-                                     .ThenInclude(x => x.Installments)
-                                     .Where(x => x.User.Id == userId && x.DebtValues.Count > 0)
-                                     .Select(x => x);
+            var resultQuery = _dbSet.Where(x => x.User.Id == userId);
 
             if (id.HasValue)
             {
@@ -50,10 +47,11 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
 
             if (!withNoDebts)
             {
-                resultQuery = resultQuery.Where(x =>
+                resultQuery = resultQuery.Include(x => x.DebtValues)
+                                     .ThenInclude(x => x.Installments).Where(x =>
                                x.DebtValues.Any(dv =>
                                dv.Installments.Any(inst =>
-                               inst.Date.Month == month.Value && inst.Date.Year == year.Value
+                               inst.Date.Month == month.Value && inst.Date.Year == year.Value 
                             )
                             )
             );

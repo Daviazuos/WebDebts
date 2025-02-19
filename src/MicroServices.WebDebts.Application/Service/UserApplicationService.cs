@@ -29,8 +29,6 @@ namespace MicroServices.WebDebts.Application.Service
 
         public async Task CreateUser(UserAppModel userAppModel)
         {
-            //var userEntity = userAppModel.ToModel();
-
             var userEntity = new User
             {
                 Id = Guid.NewGuid(),
