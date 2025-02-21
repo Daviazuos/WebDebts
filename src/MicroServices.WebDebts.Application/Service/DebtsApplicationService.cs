@@ -519,15 +519,21 @@ namespace MicroServices.WebDebts.Application.Services
 
             var draftDebt = await ParseNubankNotification(addDebtFromAppRequest.notification, user);
 
-            await _draftDebtRepository.AddAsync(draftDebt);
-            await _unitOfWork.CommitAsync();
-            return new GenericResponse { Id = draftDebt.Id };
+            if (draftDebt != null)
+            {
+                await _draftDebtRepository.AddAsync(draftDebt);
+                await _unitOfWork.CommitAsync();
+                return new GenericResponse { Id = draftDebt.Id };
+            }
+            return new GenericResponse { };
+
         }
 
         public async Task<DraftDebt> ParseNubankNotification(string message, User user)
         {
             var card = await _cardRepository.FindByIdAsync(new Guid("22a209e0-4164-4f7b-ab66-3d7e4ab689d7"));
-            var regex = new Regex(@"Compra aprovada: R\$(\d+,\d{2}) em (.*?) em (\d{2}/\d{2}/\d{4}) às (\d{2}:\d{2})");
+            var regex = new Regex(@"Compra de R\$(\d+[,.]\d{2}) APROVADA em (.*?) para o cartão com final (\d{4})");
+
             var match = regex.Match(message);
 
             if (!match.Success)
@@ -535,10 +541,9 @@ namespace MicroServices.WebDebts.Application.Services
                 return null;
             }
 
-            var value = decimal.Parse(match.Groups[1].Value, CultureInfo.GetCultureInfo("pt-BR"));
+            var value = decimal.Parse(match.Groups[1].Value, CultureInfo.GetCultureInfo("en-US"));
             var name = match.Groups[2].Value;
-            var dateString = match.Groups[3].Value + " " + match.Groups[4].Value;
-            var buyDate = DateTime.ParseExact(dateString, "dd/MM/yyyy HH:mm", CultureInfo.GetCultureInfo("pt-BR"));
+            var buyDate = DateTime.Now;
 
             return new DraftDebt
             {
