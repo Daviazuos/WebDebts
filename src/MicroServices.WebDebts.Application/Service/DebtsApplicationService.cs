@@ -532,7 +532,7 @@ namespace MicroServices.WebDebts.Application.Services
         public async Task<DraftDebt> ParseNubankNotification(string message, User user)
         {
             var card = await _cardRepository.FindByIdAsync(new Guid("22a209e0-4164-4f7b-ab66-3d7e4ab689d7"));
-            var regex = new Regex(@"Compra de R\$(\d+[,.]\d{2}) APROVADA em (.*?) para o cartão com final (\d{4})");
+            var regex = new Regex(@"Compra de R\$ ?(\d+[,.]\d{2}) APROVADA em (.*?) para o cartão com final (\d{4})");
 
             var match = regex.Match(message);
 
