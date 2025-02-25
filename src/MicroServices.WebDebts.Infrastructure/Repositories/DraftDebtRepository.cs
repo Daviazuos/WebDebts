@@ -27,5 +27,12 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             _dbSet = context.Set<DraftDebt>();
             _context = context;
         }
+
+        public async Task<List<DraftDebt>> GetByUserIdAsync(Guid userId)
+        {
+            var resultQuery = _dbSet.Include(x => x.Card).Where(x => x.User.Id == userId);
+
+            return resultQuery.ToList();
+        }
     }
 }

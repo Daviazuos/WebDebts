@@ -37,6 +37,7 @@ namespace MicroServices.WebDebts.Application.Services
         Task DeleteInstallment(Guid id);
         Task<List<GetDebtResponsiblePartiesResponse>> GetResponsiblePartiesDebts(Guid? responsiblePartyId, int month, int year, Guid userId);
         Task<GenericResponse> CreateDraftDebtFromApp(AddDebtFromAppRequest addDebtFromAppRequest, Guid userId);
+        Task<List<DraftDebt>> GetDraftsDebtsByUser(Guid userId);
     }
 
     public class DebtsApplicationService : IDebtsApplicationService
@@ -557,6 +558,11 @@ namespace MicroServices.WebDebts.Application.Services
                 OriginalText = message,
                 CreatedAt = DateTime.UtcNow,
             };
+        }
+
+        public async Task<List<DraftDebt>> GetDraftsDebtsByUser(Guid userId)
+        {
+            return await _draftDebtRepository.GetByUserIdAsync(userId);
         }
     }
 }

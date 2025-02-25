@@ -9,6 +9,6 @@ namespace MicroServices.WebDebts.Domain.Interfaces.Repository
 {
     public interface IDraftDebtRepository : IBaseRepository<DraftDebt>
     {
-        
+        Task<List<DraftDebt>> GetByUserIdAsync(Guid userId);
     }
 }

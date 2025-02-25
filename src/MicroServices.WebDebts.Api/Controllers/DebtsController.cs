@@ -244,5 +244,18 @@ namespace MicroServices.WebDebts.Api.Controllers
 
             return new OkObjectResult(debt);
         }
+
+        [HttpGet, Route("GetDraftsDebtsByUser")]
+        [Authorize]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<List<GetDebtResponsiblePartiesResponse>>> GetDraftsDebtsByUser()
+        {
+            var _userId = Guid.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Sid));
+            var response = await _debtsApplicationService.GetDraftsDebtsByUser(_userId);
+
+            return new OkObjectResult(response);
+        }
     }
 }
