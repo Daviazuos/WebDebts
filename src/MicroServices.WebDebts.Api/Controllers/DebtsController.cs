@@ -214,7 +214,7 @@ namespace MicroServices.WebDebts.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> DeleteInstallmentAsync([FromQuery] Guid id)
         {
-            await _debtsApplicationService.DeleteInstallment(id);
+            await _debtsApplicationService.DeleteDraftsDebtsById(id);
 
             return NoContent();
         }
@@ -256,6 +256,18 @@ namespace MicroServices.WebDebts.Api.Controllers
             var response = await _debtsApplicationService.GetDraftsDebtsByUser(_userId);
 
             return new OkObjectResult(response);
+        }
+
+        [HttpDelete, Route("DeleteDraftsDebtsById")]
+        [Authorize]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult> DeleteDraftsDebtsById([FromQuery] Guid id)
+        {
+            await _debtsApplicationService.DeleteDraftsDebtsById(id);
+
+            return NoContent();
         }
     }
 }

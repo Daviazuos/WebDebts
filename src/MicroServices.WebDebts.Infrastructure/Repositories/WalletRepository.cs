@@ -106,8 +106,10 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             foreach (var wallet in walletResponsibleParty)
             {
                 var instalments = wallet.WalletInstallments.Where(x => x.Date.Month == month && x.Date.Year == year).ToList();
-                wallet.WalletInstallments = instalments;
-                result.Add(wallet);
+                if (instalments.Any()) {
+                    wallet.WalletInstallments = instalments;
+                    result.Add(wallet);
+                }
             }
 
             return result;
