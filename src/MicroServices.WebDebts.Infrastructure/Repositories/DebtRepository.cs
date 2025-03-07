@@ -299,8 +299,11 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             foreach (var debt in debtResponsibleParty)
             {
                 var instalments = debt.Installments.Where(x => x.Date.Month == month && x.Date.Year == year).ToList();
-                debt.Installments = instalments;
-                result.Add(debt);
+                if (instalments.Any())
+                {
+                    debt.Installments = instalments;
+                    result.Add(debt);
+                }
             }
 
 
