@@ -214,7 +214,7 @@ namespace MicroServices.WebDebts.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> DeleteInstallmentAsync([FromQuery] Guid id)
         {
-            await _debtsApplicationService.DeleteDraftsDebtsById(id);
+            await _debtsApplicationService.DeleteInstallment(id);
 
             return NoContent();
         }

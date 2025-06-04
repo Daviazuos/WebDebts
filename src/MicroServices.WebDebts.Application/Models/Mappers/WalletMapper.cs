@@ -18,6 +18,11 @@ namespace MicroServices.WebDebts.Application.Models.Mappers
             return Mapper.Map<WalletAppModel>(entity);
         }
 
+        public static WalletInstallmentAppModel ToAppModel(this WalletInstallments entity)
+        {
+            return Mapper.Map<WalletInstallmentAppModel>(entity);
+        }
+
         public static CreateWalletAppModel ToModel(this Wallet entity)
         {
             return Mapper.Map<CreateWalletAppModel>(entity);

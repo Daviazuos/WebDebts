@@ -111,7 +111,9 @@ namespace MicroServices.WebDebts.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<List<GetWalletResponsiblePartiesResponse>>> GetResponsiblePartiesWallets([FromQuery] int month, int year, Guid? responsiblePartyId = null)
         {
-            var response = await _walletApplicationService.GetResponsiblePartiesWallets(responsiblePartyId, month, year);
+            var _userId = Guid.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Sid));
+
+            var response = await _walletApplicationService.GetResponsiblePartiesWallets(responsiblePartyId, month, year, _userId);
 
             return new OkObjectResult(response);
         }

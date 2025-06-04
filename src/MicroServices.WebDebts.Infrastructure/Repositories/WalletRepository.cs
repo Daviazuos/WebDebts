@@ -74,14 +74,14 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             walletInstallments = walletInstallments.Where(x => x.User.Id == userId);
             walletInstallments = walletInstallments.Where(x => x.Date >= startDate.Date);
             walletInstallments = walletInstallments.Where(x => x.Date <= finishDate.Date);
-            
+
 
             return await walletInstallments.ToListAsync();
         }
 
         public async Task<Wallet> GetWalletByIdAsync(Guid id)
         {
-           return await _dbSet.Where(x => x.Id == id).Include(x => x.WalletInstallments).FirstOrDefaultAsync();
+            return await _dbSet.Where(x => x.Id == id).Include(x => x.WalletInstallments).FirstOrDefaultAsync();
         }
 
         public async Task<WalletInstallments> GetInstallmentById(Guid id)
@@ -91,13 +91,11 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
 
         public async Task<List<Wallet>> GetWalletResposibleParty(Guid? responsiblePartyId, int month, int year, Guid userId)
         {
-            var walletResponsibleParty = _dbSet.Include(x => x.ResponsibleParty).Include(x => x.WalletInstallments).Where(x => x.ResponsibleParty != null);
+            var walletResponsibleParty = _dbSet.Include(x => x.ResponsibleParty).Include(x => x.WalletInstallments).Where(x => x.User.Id == userId).Where(x => x.WalletStatus != WalletStatus.Disable);
             if (responsiblePartyId.HasValue)
             {
                 walletResponsibleParty = walletResponsibleParty.Where(x => x.ResponsibleParty.Id == responsiblePartyId.Value);
             }
-
-            walletResponsibleParty = walletResponsibleParty.Where(x => x.User.Id == userId);
 
             await walletResponsibleParty.ToListAsync();
 
@@ -106,7 +104,8 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             foreach (var wallet in walletResponsibleParty)
             {
                 var instalments = wallet.WalletInstallments.Where(x => x.Date.Month == month && x.Date.Year == year).ToList();
-                if (instalments.Any()) {
+                if (instalments.Any())
+                {
                     wallet.WalletInstallments = instalments;
                     result.Add(wallet);
                 }
@@ -114,30 +113,6 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
 
             return result;
         }
-
-        public async Task<List<Wallet>> GetWalletResposibleParty(Guid? responsiblePartyId, int month, int year)
-        {
-            var walletResponsibleParty = _dbSet.Include(x => x.ResponsibleParty).Include(x => x.WalletInstallments).Where(x => x.ResponsibleParty != null);
-            if (responsiblePartyId.HasValue)
-            {
-                walletResponsibleParty = walletResponsibleParty.Where(x => x.ResponsibleParty.Id == responsiblePartyId.Value);
-            }
-
-            await walletResponsibleParty.ToListAsync();
-
-            var result = new List<Wallet>();
-
-            foreach (var wallet in walletResponsibleParty)
-            {
-                var instalments = wallet.WalletInstallments.Where(x => x.Date.Month == month && x.Date.Year <= year).ToList();
-                wallet.WalletInstallments = instalments;
-                result.Add(wallet);
-            }
-
-
-            return result;
-        }
     }
-
 }
 

@@ -21,7 +21,7 @@ namespace MicroServices.WebDebts.Application.Service
         Task<IEnumerable<GetWalletByIdResponse>> GetWallets(WalletStatus? walletStatus, int month, int year, Guid userId);
         Task DeleteWallet(Guid id);
         Task<GenericResponse> UpdateWalletInstallment(Guid id, WalletInstallmentAppModel walletInstallmentAppModel);
-        Task<List<GetWalletResponsiblePartiesResponse>> GetResponsiblePartiesWallets(Guid? responsiblePartyId, int month, int year);
+        Task<List<GetWalletResponsiblePartiesResponse>> GetResponsiblePartiesWallets(Guid? responsiblePartyId, int month, int year, Guid userId);
     }
     public class WalletApplicationService : IWalletApplicationService
     {
@@ -141,19 +141,47 @@ namespace MicroServices.WebDebts.Application.Service
             return new GenericResponse { Id = walletInstallment.Id };
         }
 
-        public async Task<List<GetWalletResponsiblePartiesResponse>> GetResponsiblePartiesWallets(Guid? responsiblePartyId, int month, int year)
+        public async Task<List<GetWalletResponsiblePartiesResponse>> GetResponsiblePartiesWallets(Guid? responsiblePartyId, int month, int year, Guid userId)
         {
-            var walletResponsibleParties = await _walletRepository.GetWalletResposibleParty(responsiblePartyId, month, year);
+            var walletResponsibleParties = await _walletRepository.GetWalletResposibleParty(responsiblePartyId, month, year, userId);
 
-            var response = walletResponsibleParties.GroupBy(d => d.ResponsibleParty.Id)
-                                    .Select(
-                                        g => new GetWalletResponsiblePartiesResponse
-                                        {
-                                            Name = g.First().ResponsibleParty.Name,
-                                            Value = g.Sum(s => s.WalletInstallments.First().Value),
-                                            WalletAppModels = g.Select(x => x.ToAppModel()).ToList()
-                                        }).ToList();
-            return response;
+            var withResponsible = new List<Wallet>();
+            var withNoResponsible = new List<Wallet>();
+
+            foreach (var wallet in  walletResponsibleParties)
+            {
+                if (wallet.ResponsibleParty != null)
+                {
+                    withResponsible.Add(wallet);
+                }
+                else
+                {
+                    withNoResponsible.Add(wallet);
+                }
+            }
+
+
+            var responseWithResponsible = withResponsible.GroupBy(d => d.ResponsibleParty.Id)
+                                .Select(
+                                    g => new GetWalletResponsiblePartiesResponse
+                                    {
+                                        Name = g.First().ResponsibleParty.Name,
+                                        Value = g.Sum(s => s.WalletInstallments.First().Value),
+                                        WalletAppModels = g.Select(x => x.ToAppModel()).ToList()
+                                    }).ToList();
+            
+            var responseWithNoResponsible = new GetWalletResponsiblePartiesResponse
+                                    {
+                                        Name = "Não categorizado",
+                                        Value = withNoResponsible.Sum(s => s.WalletInstallments.First().Value),
+                                        WalletAppModels = withNoResponsible.Select(x => x.ToAppModel()).ToList()
+                                    };
+            if (responseWithNoResponsible.WalletAppModels.Count != 0)
+            {
+                responseWithResponsible.Add(responseWithNoResponsible);
+            }
+
+            return responseWithResponsible;
         }
     }
 }

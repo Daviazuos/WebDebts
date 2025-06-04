@@ -35,6 +35,7 @@ namespace MicroServices.WebDebts.Application.Services
         Task<GetAnaliticsResponse> GetAnaliticsByMonth(GetAnaliticsRequest getAnaliticsRequest, Guid userId);
         Task EditInstallments(Guid id, InstallmentsAppModel installmentsAppModel, Guid userId);
         Task DeleteDraftsDebtsById(Guid id);
+        Task DeleteInstallment(Guid id);
         Task<List<GetDebtResponsiblePartiesResponse>> GetResponsiblePartiesDebts(Guid? responsiblePartyId, int month, int year, Guid userId);
         Task<GenericResponse> CreateDraftDebtFromApp(AddDebtFromAppRequest addDebtFromAppRequest, Guid userId);
         Task<List<DraftDebt>> GetDraftsDebtsByUser(Guid userId);
@@ -122,6 +123,13 @@ namespace MicroServices.WebDebts.Application.Services
         {
             var draftModel = await _draftDebtRepository.FindByIdAsync(id);
             await _draftDebtRepository.Remove(draftModel);
+            await _unitOfWork.CommitAsync();
+        }
+
+        public async Task DeleteInstallment(Guid id)
+        {
+            await _debtRepository.DeleteInstallment(id);
+
             await _unitOfWork.CommitAsync();
         }
 
@@ -445,7 +453,7 @@ namespace MicroServices.WebDebts.Application.Services
                 .GroupBy(d => d.Id)
                 .Select(g =>
                 {
-                    var walletGroup = walletResponsibleParties.GroupBy(w => w.ResponsibleParty);
+                    var walletGroup = walletResponsibleParties.Where(x => x.ResponsibleParty != null).GroupBy(w => w.ResponsibleParty);
                     var debtGroup = debtsresponsibleParties.GroupBy(d => d.ResponsibleParty);
 
 
