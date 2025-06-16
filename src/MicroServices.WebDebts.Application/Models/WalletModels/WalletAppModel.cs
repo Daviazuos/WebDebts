@@ -7,6 +7,7 @@ namespace MicroServices.WebDebts.Application.Models
 {
     public class WalletAppModel
     {
+        public Guid Id { get; set; }
         public string Name { get; set; }
         public decimal Value { get; set; }
         public DateTime Date { get; set; }
