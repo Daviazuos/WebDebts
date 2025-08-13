@@ -46,6 +46,15 @@ namespace MicroServices.WebDebts.Infrastructure.Database
             modelBuilder.Entity<DraftDebt>().HasOne(x => x.Card);
 
             modelBuilder.Entity<DraftDebt>().HasOne(x => x.User);
+
+            modelBuilder.Entity<Planner>().HasKey(k => k.Id);
+
+            modelBuilder.Entity<Planner>().HasOne(p => p.User);
+            modelBuilder.Entity<Planner>().HasMany(p => p.PlannerFrequencies);
+            modelBuilder.Entity<PlannerFrequency>().HasKey(k => k.Id);
+            modelBuilder.Entity<PlannerFrequency>().HasMany(pf => pf.PlannerCategories);
+            modelBuilder.Entity<PlannerCategories>().HasKey(k => k.Id);
+            modelBuilder.Entity<PlannerCategories>().HasOne(pc => pc.DebtCategory);
         }
     }
 }

@@ -3,15 +3,17 @@ using System;
 using MicroServices.WebDebts.Infrastructure.Database.Postgres;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace MicroServices.WebDebts.Infrastructure.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250811221518_planner-table")]
+    partial class plannertable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -265,13 +267,16 @@ namespace MicroServices.WebDebts.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<decimal>("BudgetedValue")
+                        .HasColumnType("numeric");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<int>("Frequency")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("DebtCategoryId")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("Month")
+                    b.Property<int>("Frequency")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -280,63 +285,13 @@ namespace MicroServices.WebDebts.Infrastructure.Migrations
                     b.Property<Guid?>("UserId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Planners");
-                });
-
-            modelBuilder.Entity("MicroServices.WebDebts.Domain.Models.PlannerCategories", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("BudgetedValue")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<Guid?>("DebtCategoryId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("PlannerFrequencyId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
                     b.HasIndex("DebtCategoryId");
 
-                    b.HasIndex("PlannerFrequencyId");
+                    b.HasIndex("UserId");
 
-                    b.ToTable("PlannerCategories");
-                });
-
-            modelBuilder.Entity("MicroServices.WebDebts.Domain.Models.PlannerFrequency", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<int>("FrequencyNumber")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid?>("PlannerId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PlannerId");
-
-                    b.ToTable("PlannerFrequency");
+                    b.ToTable("Planners");
                 });
 
             modelBuilder.Entity("MicroServices.WebDebts.Domain.Models.ResponsibleParty", b =>
@@ -605,31 +560,19 @@ namespace MicroServices.WebDebts.Infrastructure.Migrations
 
             modelBuilder.Entity("MicroServices.WebDebts.Domain.Models.Planner", b =>
                 {
+                    b.HasOne("MicroServices.WebDebts.Domain.Models.DebtCategory", "DebtCategory")
+                        .WithMany()
+                        .HasForeignKey("DebtCategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("MicroServices.WebDebts.Domain.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
 
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("MicroServices.WebDebts.Domain.Models.PlannerCategories", b =>
-                {
-                    b.HasOne("MicroServices.WebDebts.Domain.Models.DebtCategory", "DebtCategory")
-                        .WithMany()
-                        .HasForeignKey("DebtCategoryId");
-
-                    b.HasOne("MicroServices.WebDebts.Domain.Models.PlannerFrequency", null)
-                        .WithMany("PlannerCategories")
-                        .HasForeignKey("PlannerFrequencyId");
-
                     b.Navigation("DebtCategory");
-                });
 
-            modelBuilder.Entity("MicroServices.WebDebts.Domain.Models.PlannerFrequency", b =>
-                {
-                    b.HasOne("MicroServices.WebDebts.Domain.Models.Planner", null)
-                        .WithMany("PlannerFrequencies")
-                        .HasForeignKey("PlannerId");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MicroServices.WebDebts.Domain.Models.ResponsibleParty", b =>
@@ -694,16 +637,6 @@ namespace MicroServices.WebDebts.Infrastructure.Migrations
             modelBuilder.Entity("MicroServices.WebDebts.Domain.Models.Debt", b =>
                 {
                     b.Navigation("Installments");
-                });
-
-            modelBuilder.Entity("MicroServices.WebDebts.Domain.Models.Planner", b =>
-                {
-                    b.Navigation("PlannerFrequencies");
-                });
-
-            modelBuilder.Entity("MicroServices.WebDebts.Domain.Models.PlannerFrequency", b =>
-                {
-                    b.Navigation("PlannerCategories");
                 });
 
             modelBuilder.Entity("MicroServices.WebDebts.Domain.Models.Wallet", b =>

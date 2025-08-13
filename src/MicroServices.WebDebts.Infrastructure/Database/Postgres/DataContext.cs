@@ -21,8 +21,7 @@ namespace MicroServices.WebDebts.Infrastructure.Database.Postgres
         public DbSet<WalletInstallments> WalletInstallments { get; set; }
         public DbSet<ResponsibleParty> ResponsibleParty { get; set; }
         public DbSet<DraftDebt> DraftDebt { get; set; }
-
-        
+        public DbSet<Planner> Planners { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
