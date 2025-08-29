@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
+using MicroServices.WebDebts.Application.Models.Mappers;
 
 namespace MicroServices.WebDebts.Application.Service
 {
@@ -97,7 +98,7 @@ namespace MicroServices.WebDebts.Application.Service
             await _plannerRepository.UpdateAsync(planner);
         }
 
-        public async Task AddPlannerCategoriesAsync(Guid plannerFrequencyId, AddPlannerCategoriesRequest request)
+        public async Task<PlannerFrequencyResponse> AddPlannerCategoriesAsync(Guid plannerFrequencyId, AddPlannerCategoriesRequest request)
         {
             var plannerFrequency = await _plannerRepository.FindPlannerFrequencyByIdAsync(plannerFrequencyId);
             if (plannerFrequency == null)
@@ -113,6 +114,8 @@ namespace MicroServices.WebDebts.Application.Service
 
             plannerFrequency.PlannerCategories.Add(category);
             await _plannerRepository.UpdatePlannerFrequencyAsync(plannerFrequency);
+
+            return plannerFrequency.ToFrequencyResponse();
 
 
         }

@@ -58,8 +58,8 @@ namespace MicroServices.WebDebts.Api.Controllers
             if (request == null)
                 return BadRequest();
 
-            await _plannerService.AddPlannerCategoriesAsync(plannerFrequencyId, request);
-            return NoContent();
+            var response = await _plannerService.AddPlannerCategoriesAsync(plannerFrequencyId, request);
+            return Ok(response);
         }
     }
 }

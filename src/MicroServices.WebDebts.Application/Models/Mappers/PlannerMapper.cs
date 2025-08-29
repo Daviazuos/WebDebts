@@ -23,6 +23,16 @@ namespace MicroServices.WebDebts.Application.Models.Mappers
         {
             return Mapper.Map<Planner>(model);
         }
+
+        public static PlannerFrequency ToFrequencyEntity(this PlannerFrequencyResponse model)
+        {
+            return Mapper.Map<PlannerFrequency>(model);
+        }
+
+        public static PlannerFrequencyResponse ToFrequencyResponse(this PlannerFrequency model)
+        {
+            return Mapper.Map<PlannerFrequencyResponse>(model);
+        }
     }
 
     public class PlannerMapperProfile : Profile
@@ -33,6 +43,12 @@ namespace MicroServices.WebDebts.Application.Models.Mappers
                 .ReverseMap();
 
             CreateMap<PlannerFrequencyRequest, Planner>()
+                .ReverseMap();
+
+            CreateMap<PlannerFrequencyResponse, PlannerFrequency>()
+                .ReverseMap();
+
+            CreateMap<PlannerCategoryResponse, PlannerCategories>()
                 .ReverseMap();
         }
     }

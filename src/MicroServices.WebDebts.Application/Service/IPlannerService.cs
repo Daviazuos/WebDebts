@@ -1,5 +1,6 @@
 using MicroServices.WebDebts.Application.Models.PlannerModels;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace MicroServices.WebDebts.Application.Service
@@ -8,6 +9,6 @@ namespace MicroServices.WebDebts.Application.Service
     {
         Task<PlannerResponse> AddPlannerAsync(CreatePlannerRequest request);
         Task AddPlannerFrequenciesAsync(Guid plannerId, AddPlannerFrequenciesRequest request);
-        Task AddPlannerCategoriesAsync(Guid plannerFrequencyId, AddPlannerCategoriesRequest request);
+        Task<PlannerFrequencyResponse> AddPlannerCategoriesAsync(Guid plannerFrequencyId, AddPlannerCategoriesRequest request);
     }
 }
