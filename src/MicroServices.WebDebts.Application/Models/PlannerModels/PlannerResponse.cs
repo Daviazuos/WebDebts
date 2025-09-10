@@ -17,6 +17,8 @@ namespace MicroServices.WebDebts.Application.Models.PlannerModels
     {
         public Guid Id { get; set; }
         public int FrequencyNumber { get; set; }
+        public DateTime Start { get; set; }
+        public DateTime End { get; set; }
         public List<PlannerCategoryResponse> PlannerCategories { get; set; }
     }
 

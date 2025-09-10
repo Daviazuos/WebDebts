@@ -56,5 +56,51 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             _plannerFrequencyDbSet.Update(plannerFrequency);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<List<Planner>> GetByUserAndMonthAsync(Guid userId, int month, int year)
+        {
+            return await _context.Planners
+                .Where(p => p.User != null && p.User.Id == userId && p.Month == month && p.Year == year)
+                .Include(p => p.PlannerFrequencies)
+                    .ThenInclude(f => f.PlannerCategories)
+                        .ThenInclude(c => c.DebtCategory)
+                .ToListAsync();
+        }
+
+        public async Task<PlannerCategories> FindPlannerCategoryByIdAsync(Guid plannerCategoryId)
+        {
+            // Busca a PlannerCategory pelo ID, incluindo a DebtCategory
+            return await _context.Set<PlannerCategories>()
+                .Include(pc => pc.DebtCategory)
+                .FirstOrDefaultAsync(pc => pc.Id == plannerCategoryId);
+        }
+
+        public async Task UpdatePlannerCategoryAsync(PlannerCategories plannerCategory)
+        {
+            _context.Set<PlannerCategories>().Update(plannerCategory);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeletePlannerCategoryAsync(Guid plannerCategoryId)
+        {
+            var dbSet = _context.Set<PlannerCategories>();
+            var entity = await dbSet.FindAsync(plannerCategoryId);
+            if (entity != null)
+            {
+                dbSet.Remove(entity);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task DeletePlannerFrequencyAsync(Guid plannerFrequencyId)
+        {
+            var dbSet = _context.Set<PlannerFrequency>();
+            var entity = await dbSet.FindAsync(plannerFrequencyId);
+            if (entity != null)
+            {
+                dbSet.Remove(entity);
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 }

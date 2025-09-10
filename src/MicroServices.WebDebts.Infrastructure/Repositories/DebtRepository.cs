@@ -143,7 +143,7 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             return resultQuery;
         }
 
-        public async Task<PaginatedList<Installments>> FilterInstallmentsAsync(int pageNumber, int pageSize, Guid? debtId, Guid? cardId, int? month, int? year, DebtInstallmentType? debtInstallmentType, Status? status, DebtType? debtType, Guid userId, bool? isGoal)
+        public async Task<PaginatedList<Installments>> FilterInstallmentsAsync(int pageNumber, int pageSize, Guid? debtId, Guid? cardId, int? month, int? year, DebtInstallmentType? debtInstallmentType, Status? status, DebtType? debtType, Guid userId, bool? isGoal, DateTime? startDate, DateTime? endDate)
         {
 
             var installments = _context.Installments.Include(x => x.Debt).ThenInclude(x => x.DebtCategory).Include(x => x.Debt).ThenInclude(x => x.ResponsibleParty).AsQueryable();
@@ -167,7 +167,7 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
                 installments = installments.Where(x => x.Debt.DebtType == debtType.Value);
             }
 
-            var resultQuery = InstallmentsFilters(installments, month, year, status);
+            var resultQuery = InstallmentsFilters(installments, month, year, status, startDate, endDate);
 
             var skipNumber = pageNumber > 0 ? ((pageNumber - 1) * pageSize) : 0;
             var totalItems = resultQuery.Count();
@@ -201,7 +201,7 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             };
         }
 
-        private static IQueryable<Installments> InstallmentsFilters(IQueryable<Installments> resultQuery, int? month, int? year, Status? status)
+        private static IQueryable<Installments> InstallmentsFilters(IQueryable<Installments> resultQuery, int? month, int? year, Status? status, DateTime? startDate, DateTime? endDate)
         {
             if (month.HasValue)
             {
@@ -214,6 +214,10 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             if (status.HasValue)
             {
                 resultQuery = resultQuery.Where(x => x.Status == status.Value);
+            }
+            if (startDate.HasValue && endDate.HasValue)
+            {
+                resultQuery = resultQuery.Where(x => x.Date >= startDate.Value && x.Date <= endDate.Value);
             }
 
             return resultQuery;

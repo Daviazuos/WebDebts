@@ -238,7 +238,9 @@ namespace MicroServices.WebDebts.Application.Services
                                                                       (Status?)filterInstallmentsRequest.StatusApp,
                                                                       (DebtType?)filterInstallmentsRequest.DebtType,
                                                                       userId,
-                                                                      filterInstallmentsRequest.IsGoal);
+                                                                      filterInstallmentsRequest.IsGoal,
+                                                                      null,
+                                                                      null);
 
             var installmentsApp = debts.Items.Select(x => new FilterInstallmentsResponse
             {
@@ -296,7 +298,7 @@ namespace MicroServices.WebDebts.Application.Services
 
         public async Task<List<GetDebtCategoryResponse>> GetDebtCategories(FilterDebtsCategoriesRequest filterDebtsCategoriesRequest, Guid userId)
         {
-            var installments = await _debtRepository.FilterInstallmentsAsync(1, 9999, null, filterDebtsCategoriesRequest.CardId, filterDebtsCategoriesRequest.Month, filterDebtsCategoriesRequest.Year, null, null, null, userId, null);
+            var installments = await _debtRepository.FilterInstallmentsAsync(1, 9999, null, filterDebtsCategoriesRequest.CardId, filterDebtsCategoriesRequest.Month, filterDebtsCategoriesRequest.Year, null, null, null, userId, null, filterDebtsCategoriesRequest.StartDate, filterDebtsCategoriesRequest.EndDate);
 
             var valueTotal = installments.Items.Sum(x => x.Value);
 
@@ -405,7 +407,7 @@ namespace MicroServices.WebDebts.Application.Services
             {
                 if (putInstallmentsRequest.CardId.HasValue)
                 {
-                    var installments = await _debtRepository.FilterInstallmentsAsync(1, 9998, null, putInstallmentsRequest.CardId.Value, putInstallmentsRequest.PaymentDate.Value.Month, putInstallmentsRequest.PaymentDate.Value.Year, null, null, null, userId, null);
+                    var installments = await _debtRepository.FilterInstallmentsAsync(1, 9998, null, putInstallmentsRequest.CardId.Value, putInstallmentsRequest.PaymentDate.Value.Month, putInstallmentsRequest.PaymentDate.Value.Year, null, null, null, userId, null, null, null);
 
                     foreach (var debt in installments.Items)
                     {
@@ -422,7 +424,7 @@ namespace MicroServices.WebDebts.Application.Services
             {
                 if (putInstallmentsRequest.CardId.HasValue)
                 {
-                    var installments = await _debtRepository.FilterInstallmentsAsync(1, 9999, null, cardId: putInstallmentsRequest.CardId.Value, putInstallmentsRequest.PaymentDate.Value.Month, putInstallmentsRequest.PaymentDate.Value.Year, null, null, DebtType.Card, userId, null);
+                    var installments = await _debtRepository.FilterInstallmentsAsync(1, 9999, null, cardId: putInstallmentsRequest.CardId.Value, putInstallmentsRequest.PaymentDate.Value.Month, putInstallmentsRequest.PaymentDate.Value.Year, null, null, DebtType.Card, userId, null, null, null);
 
                     foreach (var debt in installments.Items)
                     {

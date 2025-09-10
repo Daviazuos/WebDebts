@@ -8,5 +8,7 @@ namespace MicroServices.WebDebts.Application.Models
         public int Month { get; set; }
         public int Year { get; set; }
         public Guid? CardId { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
     }
 }

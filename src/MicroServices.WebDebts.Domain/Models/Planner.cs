@@ -16,6 +16,8 @@ namespace MicroServices.WebDebts.Domain.Models
     public class PlannerFrequency : ModelBase
     {
         public int FrequencyNumber { get; set; }
+        public DateTime Start { get; set; }
+        public DateTime End { get; set; }
         public List<PlannerCategories> PlannerCategories { get; set; }
     }
 

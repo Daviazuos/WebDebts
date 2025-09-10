@@ -13,31 +13,29 @@ namespace MicroServices.WebDebts.Application.Service
     {
         private readonly IPlannerRepository _plannerRepository;
         private readonly ICategoryRepository _categoryRepository;
+        private readonly IUserRepository _userRepository;
 
-        public PlannerService(IPlannerRepository plannerRepository, ICategoryRepository categoryRepository)
+
+        public PlannerService(IPlannerRepository plannerRepository, ICategoryRepository categoryRepository, IUserRepository userRepository)
         {
             _plannerRepository = plannerRepository;
             _categoryRepository = categoryRepository;
+            _userRepository = userRepository;
         }
 
-        public async Task<PlannerResponse> AddPlannerAsync(CreatePlannerRequest request)
+        public async Task<PlannerResponse> AddPlannerAsync(CreatePlannerRequest request, Guid userId)
         {
-            int frequencyCount = request.Frequency switch
-            {
-                Frequency.Daily => 30,
-                Frequency.Weekly => 4,
-                Frequency.Biweekly => 2,
-                Frequency.Monthly => 1,
-                _ => 1
-            };
-
-            var plannerFrequencies = Enumerable.Range(1, frequencyCount)
-                .Select(i => new PlannerFrequency
+            var plannerFrequencies = request.Blocks.Select((f, i) => new PlannerFrequency
                 {
                     FrequencyNumber = i,
+                    Start = f.StartDate,
+                    End = f.EndDate,
                     PlannerCategories = new List<PlannerCategories>()
                 })
                 .ToList();
+
+            var user = await _userRepository.FindByIdAsync(userId);
+
 
             var planner = new Planner
             {
@@ -47,7 +45,8 @@ namespace MicroServices.WebDebts.Application.Service
                 Year = request.Year,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                PlannerFrequencies = plannerFrequencies
+                PlannerFrequencies = plannerFrequencies,
+                User = user,
             };
 
             await _plannerRepository.AddAsync(planner);
@@ -118,6 +117,89 @@ namespace MicroServices.WebDebts.Application.Service
             return plannerFrequency.ToFrequencyResponse();
 
 
+        }
+
+        public async Task<List<PlannerResponse>> GetPlannersByUserAndMonthAsync(Guid userId, int month, int year)
+        {
+            var planners = await _plannerRepository.GetByUserAndMonthAsync(userId, month, year);
+
+            return planners.Select(planner => new PlannerResponse
+            {
+                Id = planner.Id,
+                Frequency = (Frequency)planner.Frequency,
+                Month = planner.Month,
+                Year = planner.Year,
+                PlannerFrequencies = planner.PlannerFrequencies?.Select(f => new PlannerFrequencyResponse
+                {
+                    Id = f.Id,
+                    FrequencyNumber = f.FrequencyNumber,
+                    Start = f.Start,
+                    End = f.End,
+                    PlannerCategories = f.PlannerCategories?.Select(c => new PlannerCategoryResponse
+                    {
+                        Id = c.Id,
+                        DebtCategoryId = c.DebtCategory?.Id ?? Guid.Empty,
+                        DebtCategoryName = c.DebtCategory?.Name,
+                        BudgetedValue = c.BudgetedValue
+                    }).ToList()
+                }).OrderBy(x => x.FrequencyNumber).ToList()
+            }).ToList();
+        }
+
+        public async Task<PlannerCategoryResponse> UpdatePlannerCategoryBudgetAsync(Guid plannerCategoryId, decimal budgetedValue)
+        {
+            // Supondo que exista um método para buscar a PlannerCategory pelo ID
+            var plannerCategory = await _plannerRepository.FindPlannerCategoryByIdAsync(plannerCategoryId);
+            if (plannerCategory == null)
+                throw new Exception("PlannerCategory not found");
+
+            plannerCategory.BudgetedValue = budgetedValue;
+            await _plannerRepository.UpdatePlannerCategoryAsync(plannerCategory);
+
+            return new PlannerCategoryResponse
+            {
+                Id = plannerCategory.Id,
+                DebtCategoryId = plannerCategory.DebtCategory?.Id ?? Guid.Empty,
+                DebtCategoryName = plannerCategory.DebtCategory?.Name,
+                BudgetedValue = plannerCategory.BudgetedValue
+            };
+        }
+
+        public async Task DeletePlannerCategoryAsync(Guid plannerCategoryId)
+        {
+            // Supondo que já exista o método no repositório
+            await _plannerRepository.DeletePlannerCategoryAsync(plannerCategoryId);
+        }
+
+        public async Task<PlannerFrequencyResponse> UpdatePlannerFrequencyDatesAsync(Guid plannerFrequencyId, DateTime start, DateTime end)
+        {
+            var plannerFrequency = await _plannerRepository.FindPlannerFrequencyByIdAsync(plannerFrequencyId);
+            if (plannerFrequency == null)
+                throw new Exception("PlannerFrequency not found");
+
+            plannerFrequency.Start = start;
+            plannerFrequency.End = end;
+            await _plannerRepository.UpdatePlannerFrequencyAsync(plannerFrequency);
+
+            return new PlannerFrequencyResponse
+            {
+                Id = plannerFrequency.Id,
+                FrequencyNumber = plannerFrequency.FrequencyNumber,
+                Start = plannerFrequency.Start,
+                End = plannerFrequency.End,
+                PlannerCategories = plannerFrequency.PlannerCategories?.Select(c => new PlannerCategoryResponse
+                {
+                    Id = c.Id,
+                    DebtCategoryId = c.DebtCategory?.Id ?? Guid.Empty,
+                    DebtCategoryName = c.DebtCategory?.Name,
+                    BudgetedValue = c.BudgetedValue
+                }).ToList()
+            };
+        }
+
+        public async Task DeletePlannerFrequencyAsync(Guid plannerFrequencyId)
+        {
+            await _plannerRepository.DeletePlannerFrequencyAsync(plannerFrequencyId);
         }
     }
 }
