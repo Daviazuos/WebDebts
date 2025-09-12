@@ -217,7 +217,7 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             }
             if (startDate.HasValue && endDate.HasValue)
             {
-                resultQuery = resultQuery.Where(x => x.Date >= startDate.Value && x.Date <= endDate.Value);
+                resultQuery = resultQuery.Where(x => x.BuyDate >= startDate.Value && x.BuyDate <= endDate.Value);
             }
 
             return resultQuery;

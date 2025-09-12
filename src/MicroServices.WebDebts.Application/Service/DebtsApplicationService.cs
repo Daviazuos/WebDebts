@@ -290,6 +290,7 @@ namespace MicroServices.WebDebts.Application.Services
         public class InstallmentDto
         {
             public string DebtName { get; set; }
+            public DateTime Date { get; set; }
             public Guid Id { get; set; }
             public string Category { get; set; }
             public Decimal Value { get; set; }
@@ -313,6 +314,7 @@ namespace MicroServices.WebDebts.Application.Services
                         InstallmentsPerCategory = g.Select(installment => new InstallmentDto
                         {
                             DebtName = installment.Debt.Name,
+                            Date = installment.Date,
                             Id = installment.Id,
                             Category = g.First().Debt.DebtCategory?.Name,
                             Value = installment.Value,
