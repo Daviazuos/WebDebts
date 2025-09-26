@@ -167,7 +167,12 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
                 installments = installments.Where(x => x.Debt.DebtType == debtType.Value);
             }
 
-            var resultQuery = InstallmentsFilters(installments, month, year, status, startDate, endDate);
+            if (startDate.HasValue && endDate.HasValue)
+            {
+                installments = installments.Where(x => x.Debt.BuyDate >= startDate.Value && x.Debt.BuyDate <= endDate.Value);
+            }
+
+            var resultQuery = InstallmentsFilters(installments, month, year, status);
 
             var skipNumber = pageNumber > 0 ? ((pageNumber - 1) * pageSize) : 0;
             var totalItems = resultQuery.Count();
@@ -201,7 +206,7 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             };
         }
 
-        private static IQueryable<Installments> InstallmentsFilters(IQueryable<Installments> resultQuery, int? month, int? year, Status? status, DateTime? startDate, DateTime? endDate)
+        private static IQueryable<Installments> InstallmentsFilters(IQueryable<Installments> resultQuery, int? month, int? year, Status? status)
         {
             if (month.HasValue)
             {
@@ -215,11 +220,7 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             {
                 resultQuery = resultQuery.Where(x => x.Status == status.Value);
             }
-            if (startDate.HasValue && endDate.HasValue)
-            {
-                resultQuery = resultQuery.Where(x => x.BuyDate >= startDate.Value && x.BuyDate <= endDate.Value);
-            }
-
+            
             return resultQuery;
         }
 

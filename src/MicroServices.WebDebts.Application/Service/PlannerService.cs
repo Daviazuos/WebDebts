@@ -62,7 +62,9 @@ namespace MicroServices.WebDebts.Application.Service
                     {
                         Id = f.Id,
                         FrequencyNumber = f.FrequencyNumber,
-                        PlannerCategories = new List<PlannerCategoryResponse>()
+                        PlannerCategories = new List<PlannerCategoryResponse>(),
+                        Start = f.Start,
+                        End = f.End
                     })
                     .ToList()
             };

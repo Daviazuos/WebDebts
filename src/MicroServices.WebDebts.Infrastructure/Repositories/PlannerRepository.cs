@@ -94,13 +94,21 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
 
         public async Task DeletePlannerFrequencyAsync(Guid plannerFrequencyId)
         {
-            var dbSet = _context.Set<PlannerFrequency>();
-            var entity = await dbSet.FindAsync(plannerFrequencyId);
-            if (entity != null)
+            var dbSetFrequency = _context.Set<PlannerFrequency>();
+            var dbSetCategories = _context.Set<PlannerCategories>();
+
+            // Remover todas as categorias relacionadas à frequência
+            var categories = dbSetCategories.Where(c => EF.Property<Guid>(c, "PlannerFrequencyId") == plannerFrequencyId);
+            dbSetCategories.RemoveRange(categories);
+
+            // Agora pode remover a frequência
+            var frequency = await dbSetFrequency.FindAsync(plannerFrequencyId);
+            if (frequency != null)
             {
-                dbSet.Remove(entity);
-                await _context.SaveChangesAsync();
+                dbSetFrequency.Remove(frequency);
             }
+
+            await _context.SaveChangesAsync();
         }
     }
 }
