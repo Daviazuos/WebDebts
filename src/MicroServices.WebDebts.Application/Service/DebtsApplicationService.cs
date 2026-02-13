@@ -39,6 +39,7 @@ namespace MicroServices.WebDebts.Application.Services
         Task<List<GetDebtResponsiblePartiesResponse>> GetResponsiblePartiesDebts(Guid? responsiblePartyId, int month, int year, Guid userId);
         Task<GenericResponse> CreateDraftDebtFromApp(AddDebtFromAppRequest addDebtFromAppRequest, Guid userId);
         Task<List<DraftDebt>> GetDraftsDebtsByUser(Guid userId);
+        Task<List<UpcomingDebtResponse>> GetUpcomingDebts(int daysAhead, int daysAgo, Guid userId);
     }
 
     public class DebtsApplicationService : IDebtsApplicationService
@@ -576,6 +577,68 @@ namespace MicroServices.WebDebts.Application.Services
         public async Task<List<DraftDebt>> GetDraftsDebtsByUser(Guid userId)
         {
             return await _draftDebtRepository.GetByUserIdAsync(userId);
+        }
+
+        public async Task<List<UpcomingDebtResponse>> GetUpcomingDebts(int daysAhead, int daysAgo, Guid userId)
+        {
+            var date = DateTime.UtcNow.Date;
+            var startDate = date.AddDays(-daysAgo);
+            var endDate = date.AddDays(daysAhead);
+
+            // Get unpaid simple installments between dates
+            var installmentsPaged = await _debtRepository.FilterInstallmentsAsync(1, 9999, null, null, null, null, null, Status.NotPaid, DebtType.Simple, userId, null, startDate, endDate, false);
+            var installments = installmentsPaged.Items ?? new List<Installments>();
+
+            var results = new List<UpcomingDebtResponse>();
+
+            // Map individual installments (non-card)
+            results.AddRange(installments.Select(x => new UpcomingDebtResponse
+            {
+                Id = x.Id,
+                Date = x.Date.ToString("MMM d", CultureInfo.InvariantCulture),
+                Title = x.Debt?.Name ?? x.Debt?.DebtCategory?.Name ?? "",
+                Subtitle = x.Debt?.DebtCategory?.Name ?? (x.Debt?.Card?.Name ?? string.Empty),
+                LastCharge = (x.BuyDate != default(DateTime)) ? $"Last Charge - {x.BuyDate.ToString("dd MMM, yyyy", CultureInfo.InvariantCulture)}" : (x.PaymentDate.HasValue ? $"Last Charge - {x.PaymentDate.Value.ToString("dd MMM, yyyy", CultureInfo.InvariantCulture)}" : string.Empty),
+                Price = x.Value,
+                Logo = null,
+                IsOverdue = x.Date < date
+            }));
+
+            // Now fetch cards that have debts in the month and check for unpaid installments
+            var cardsPaged = await _cardRepository.FindCardValuesByIdAsync(1, 9999, null, userId, date.Month, date.Year, false);
+            var cards = cardsPaged.Items ?? new List<Card>();
+
+            foreach (var card in cards)
+            {
+                // gather unpaid installments for this card in the target month/year
+                var unpaid = card.DebtValues?
+                    .SelectMany(d => d.Installments ?? new List<Installments>())
+                    .Where(inst => inst.Date.Month == date.Month && inst.Date.Year == date.Year && inst.Status != Status.Paid)
+                    .ToList();
+
+                if (unpaid != null && unpaid.Count > 0)
+                {
+                    var earliest = unpaid.OrderBy(u => u.Date).First();
+                    var lastCharge = unpaid.OrderByDescending(u => u.BuyDate != default(DateTime) ? u.BuyDate : (u.PaymentDate ?? DateTime.MinValue)).FirstOrDefault();
+
+                    results.Add(new UpcomingDebtResponse
+                    {
+                        Id = card.Id,
+                        Date = earliest.Date.ToString("MMM d", CultureInfo.InvariantCulture),
+                        Title = card.Name,
+                        Subtitle = "Credit Card",
+                        LastCharge = lastCharge != null && lastCharge.BuyDate != default(DateTime) ? $"Last Charge - {lastCharge.BuyDate.ToString("dd MMM, yyyy", CultureInfo.InvariantCulture)}" : (lastCharge != null && lastCharge.PaymentDate.HasValue ? $"Last Charge - {lastCharge.PaymentDate.Value.ToString("dd MMM, yyyy", CultureInfo.InvariantCulture)}" : string.Empty),
+                        Price = unpaid.Sum(u => u.Value),
+                        Logo = null,
+                        IsOverdue = earliest.Date < date
+                    });
+                }
+            }
+
+            // Order by date ascending
+            var ordered = results.OrderBy(r => DateTime.ParseExact(r.Date, "MMM d", CultureInfo.InvariantCulture)).ToList();
+
+            return ordered;
         }
     }
 }

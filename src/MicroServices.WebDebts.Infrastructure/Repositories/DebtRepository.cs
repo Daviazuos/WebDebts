@@ -143,7 +143,7 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             return resultQuery;
         }
 
-        public async Task<PaginatedList<Installments>> FilterInstallmentsAsync(int pageNumber, int pageSize, Guid? debtId, Guid? cardId, int? month, int? year, DebtInstallmentType? debtInstallmentType, Status? status, DebtType? debtType, Guid userId, bool? isGoal, DateTime? startDate, DateTime? endDate)
+        public async Task<PaginatedList<Installments>> FilterInstallmentsAsync(int pageNumber, int pageSize, Guid? debtId, Guid? cardId, int? month, int? year, DebtInstallmentType? debtInstallmentType, Status? status, DebtType? debtType, Guid userId, bool? isGoal, DateTime? startDate, DateTime? endDate, Boolean? buyDate)
         {
 
             var installments = _context.Installments.Include(x => x.Debt).ThenInclude(x => x.DebtCategory).Include(x => x.Debt).ThenInclude(x => x.ResponsibleParty).AsQueryable();
@@ -167,10 +167,18 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
                 installments = installments.Where(x => x.Debt.DebtType == debtType.Value);
             }
 
-            if (startDate.HasValue && endDate.HasValue)
+            if (buyDate.HasValue && buyDate.Value)
             {
-                installments = installments.Where(x => x.Debt.BuyDate >= startDate.Value && x.Debt.BuyDate <= endDate.Value);
+                if (startDate.HasValue && endDate.HasValue)
+                {
+                    installments = installments.Where(x => x.Debt.BuyDate >= startDate.Value && x.Debt.BuyDate <= endDate.Value);
+                }
             }
+            else
+                if (startDate.HasValue && endDate.HasValue)
+                {
+                    installments = installments.Where(x => x.Date >= startDate.Value && x.Date <= endDate.Value);
+                }
 
             var resultQuery = InstallmentsFilters(installments, month, year, status);
 

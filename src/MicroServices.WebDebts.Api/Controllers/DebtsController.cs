@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.Net.Mime;
 using System.Security.Claims;   
 using System.Threading.Tasks;
+using MicroServices.WebDebts.Application.Models;
+using System.Globalization;
 
 namespace MicroServices.WebDebts.Api.Controllers
 {
@@ -268,6 +270,20 @@ namespace MicroServices.WebDebts.Api.Controllers
             await _debtsApplicationService.DeleteDraftsDebtsById(id);
 
             return NoContent();
+        }
+
+        [HttpGet, Route("Upcoming")]
+        [Authorize]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<List<UpcomingDebtResponse>>> GetUpcomingAsync([FromQuery] int daysAhead = 7, int daysAgo = 5)
+        {
+            var _userId = Guid.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Sid));
+
+            var response = await _debtsApplicationService.GetUpcomingDebts(daysAhead, daysAgo, _userId);
+
+            return new OkObjectResult(response);
         }
     }
 }
