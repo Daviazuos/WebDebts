@@ -5,6 +5,7 @@ namespace MicroServices.WebDebts.Application.Models.DebtModels
 {
     public class InstallmentsAppModel
     {
+        public Guid Id { get; set; }
         public DateTime Date { get; set; }
         public DateTime? PaymentDate { get; set; }
         public int InstallmentNumber { get; set; }
