@@ -6,5 +6,7 @@ namespace MicroServices.WebDebts.Application.Models.DebtModels
     public class AddDebtFromAppRequest
     {
         public string notification { get; set; }
+        public string bankName { get; set; }
+        public string user { get; set; } 
     }
 }
