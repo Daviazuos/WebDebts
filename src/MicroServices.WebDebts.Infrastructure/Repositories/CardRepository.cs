@@ -45,19 +45,19 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
                 resultQuery = resultQuery.Where(x => x.Id == id.Value);
             }
 
-            if (!withNoDebts)
-            {
-                resultQuery = resultQuery.Include(x => x.DebtValues)
-                                     .ThenInclude(x => x.Installments).Where(x =>
-                               x.DebtValues.Any(dv =>
-                               dv.Installments.Any(inst =>
-                               inst.Date.Month == month.Value && inst.Date.Year == year.Value 
-                            )
-                            )
-            );
-            }
+            resultQuery = resultQuery.Include(x => x.DebtValues)
+                                     .ThenInclude(x => x.Installments);
 
-            
+            if (month.HasValue && year.HasValue && !withNoDebts)
+            {
+                resultQuery = resultQuery.Where(x =>
+                    x.DebtValues.Any(dv =>
+                        dv.Installments.Any(inst =>
+                            inst.Date.Month == month.Value && inst.Date.Year == year.Value
+                        )
+                    )
+                );
+            }
 
             var skipNumber = pageNumber > 0 ? ((pageNumber - 1) * pageSize) : 0;
             var totalItems = resultQuery.Count();

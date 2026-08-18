@@ -11,6 +11,7 @@ namespace MicroServices.WebDebts.Domain.Interfaces.Repository
         Task<List<Wallet>> GetWallets(WalletStatus? walletStatus, int month, int year, Guid userId);
         Task<List<Wallet>> GetWalletByMonth(int? month, int? year, Guid userId);
         Task<List<WalletInstallments>> GetWalletInstallmentByMonth(int? month, int? year, Guid userId);
+        Task<List<WalletInstallments>> GetWalletInstallmentBySpecificMonth(int? month, int? year, Guid userId);
         Task<Wallet> GetWalletByIdAsync(Guid id);
         Task<WalletInstallments> GetInstallmentById(Guid id);
         Task<List<Wallet>> GetWalletResposibleParty(Guid? responsiblePartyId, int month, int year, Guid userId);

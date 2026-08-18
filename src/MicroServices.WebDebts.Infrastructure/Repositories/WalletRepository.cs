@@ -113,6 +113,14 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
 
             return result;
         }
+
+        public async Task<List<WalletInstallments>> GetWalletInstallmentBySpecificMonth(int? month, int? year, Guid userId)
+        {
+            var walletInstallments = _dbSet.Where(x => x.WalletStatus != WalletStatus.Disable).Include(x => x.WalletInstallments).SelectMany(x => x.WalletInstallments).AsQueryable();
+            walletInstallments = walletInstallments.Where(x => x.User.Id == userId);
+            walletInstallments = walletInstallments.Where(x => x.Date.Month == month && x.Date.Year == year);
+            return await walletInstallments.ToListAsync();
+        }
     }
 }
 
