@@ -546,6 +546,10 @@ namespace MicroServices.WebDebts.Application.Services
             {
                 draftDebt = await ParseMercadoPagoNotification(addDebtFromAppRequest.notification, user, addDebtFromAppRequest.user);
             }
+            else if (addDebtFromAppRequest.bankName == "Amazon")
+            {
+                draftDebt = await ParseAmazonNotification(addDebtFromAppRequest.notification, user, addDebtFromAppRequest.user);
+            }
 
             if (draftDebt != null)
             {
@@ -554,7 +558,6 @@ namespace MicroServices.WebDebts.Application.Services
                 return new GenericResponse { Id = draftDebt.Id };
             }
             return new GenericResponse { };
-
         }
 
         public async Task<DraftDebt> ParseNubankNotification(string message, User user, string userName)
@@ -680,6 +683,39 @@ namespace MicroServices.WebDebts.Application.Services
                 DebtType = DebtType.Card,
                 Date = DateTime.UtcNow,
                 BuyDate = buyDate,
+                Card = card,
+                User = user,
+                OriginalText = message,
+                CreatedAt = DateTime.UtcNow,
+            };
+        }
+
+        public async Task<DraftDebt> ParseAmazonNotification(string message, User user, string userName)
+        {
+            // Exemplo de mensagem:
+            // "CARTAO AMAZON: COMPRA APROVADA NO CARTAO FINAL 7011 26/10/2026 11:15. VALOR DE R$128,83, ZAFFARI TOTAL. LIMITE DISPONIVEL DE R$1342,80"
+            if (userName != "Davi")
+                return null;
+
+            var card = await _cardRepository.FindByIdAsync(new Guid("650d74e9-7dbc-4eb1-ae22-316f68cb3af1"));
+
+            var regex = new Regex(@"CARTAO AMAZON: COMPRA APROVADA NO CARTAO FINAL (\d{4}) (\d{2}/\d{2}/\d{4}) (\d{2}:\d{2})\. VALOR DE R\$(\d+[,.]\d{2}), (.*)\. LIMITE DISPONIVEL DE R\$(\d+[,.]\d{2})", RegexOptions.IgnoreCase);
+            var match = regex.Match(message);
+            if (!match.Success)
+                return null;
+
+            var dataCompra = DateTime.ParseExact(match.Groups[2].Value + " " + match.Groups[3].Value, "dd/MM/yyyy HH:mm", null);
+            var valor = decimal.Parse(match.Groups[4].Value.Replace(",", "."), System.Globalization.CultureInfo.InvariantCulture);
+            var estabelecimento = match.Groups[5].Value.Trim();
+
+            return new DraftDebt
+            {
+                Id = Guid.NewGuid(),
+                Name = estabelecimento,
+                Value = valor,
+                DebtType = DebtType.Card,
+                Date = DateTime.UtcNow,
+                BuyDate = dataCompra,
                 Card = card,
                 User = user,
                 OriginalText = message,
