@@ -694,10 +694,19 @@ namespace MicroServices.WebDebts.Application.Services
         {
             // Exemplo de mensagem:
             // "CARTAO AMAZON: COMPRA APROVADA NO CARTAO FINAL 7011 26/10/2026 11:15. VALOR DE R$128,83, ZAFFARI TOTAL. LIMITE DISPONIVEL DE R$1342,80"
-            if (userName != "Davi")
-                return null;
-
-            var card = await _cardRepository.FindByIdAsync(new Guid("650d74e9-7dbc-4eb1-ae22-316f68cb3af1"));
+            var card = new Card();
+            if (userName == "Davi")
+            {
+                card = await _cardRepository.FindByIdAsync(new Guid("650d74e9-7dbc-4eb1-ae22-316f68cb3af1"));
+            }
+            else if (userName == "Victoria")
+            {
+                card = await _cardRepository.FindByIdAsync(new Guid("69614ff3-f115-48fb-bcdd-1dea925144af"));
+            }
+            else
+            {
+                return null; // User not recognized, cannot parse
+            }
 
             var regex = new Regex(@"CARTAO AMAZON: COMPRA APROVADA NO CARTAO FINAL (\d{4}) (\d{2}/\d{2}/\d{4}) (\d{2}:\d{2})\. VALOR DE R\$(\d+[,.]\d{2}), (.*)\. LIMITE DISPONIVEL DE R\$(\d+[,.]\d{2})", RegexOptions.IgnoreCase);
             var match = regex.Match(message);
