@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography.Xml;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static MicroServices.WebDebts.Application.Models.EnumAppModel;
@@ -30,6 +31,7 @@ namespace MicroServices.WebDebts.Application.Services
         Task<List<GetSumbyMonthResponse>> GetSumByMonth(GetSumByMonthRequest getSumByMonthRequest, Guid userId);
         Task EditDebt(Guid id, UpdateDebtAppModel createDebtsRequest, Guid userId);
         Task<List<GetCategoryRequest>> GetCategories(Guid userId);
+        Task<SuggestDebtCategoryResponse> SuggestCategory(string name, Guid userId);
         Task<GenericResponse> CreateCategory(CreateCategoryRequest createCategoryRequest, Guid userId);
         Task<List<GetDebtCategoryResponse>> GetDebtCategories(FilterDebtsCategoriesRequest filterDebtsCategoriesRequest, Guid userId);
         Task<GetAnaliticsResponse> GetAnaliticsByMonth(GetAnaliticsRequest getAnaliticsRequest, Guid userId);
@@ -286,6 +288,58 @@ namespace MicroServices.WebDebts.Application.Services
             var response = await _categoryRepository.GetCategories(userId);
             var categories = response.Select(x => new GetCategoryRequest { Id = x.Id, Name = x.Name }).ToList();
             return categories;
+        }
+
+        public async Task<SuggestDebtCategoryResponse> SuggestCategory(string name, Guid userId)
+        {
+            var normalizedName = NormalizeCategorySearchName(name);
+            if (normalizedName.Length < 3)
+            {
+                return null;
+            }
+
+            var matchingDebts = await _debtRepository.FindSimilarCategorizedDebtsAsync(normalizedName, userId, 20);
+            var suggestions = matchingDebts
+                .Where(candidate => candidate.Similarity >= 0.35)
+                .GroupBy(candidate => candidate.CategoryId)
+                .Select(category => new
+                {
+                    CategoryId = category.Key,
+                    CategoryName = category.First().CategoryName,
+                    Confidence = category.OrderByDescending(candidate => candidate.Similarity)
+                        .Take(3)
+                        .Average(candidate => candidate.Similarity)
+                })
+                .OrderByDescending(category => category.Confidence)
+                .FirstOrDefault();
+
+            if (suggestions == null || suggestions.Confidence < 0.45)
+            {
+                return null;
+            }
+
+            return new SuggestDebtCategoryResponse
+            {
+                CategoryId = suggestions.CategoryId,
+                CategoryName = suggestions.CategoryName,
+                Confidence = Math.Round(suggestions.Confidence, 2)
+            };
+        }
+
+        private static string NormalizeCategorySearchName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return string.Empty;
+            }
+
+            var decomposedName = name.Normalize(NormalizationForm.FormD);
+            var normalizedCharacters = decomposedName
+                .Where(character => CharUnicodeInfo.GetUnicodeCategory(character) != UnicodeCategory.NonSpacingMark)
+                .Select(character => char.IsLetterOrDigit(character) ? char.ToLowerInvariant(character) : ' ')
+                .ToArray();
+
+            return Regex.Replace(new string(normalizedCharacters), @"\s+", " ").Trim();
         }
 
         public class InstallmentDto

@@ -8,8 +8,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -103,6 +105,78 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             resultQuery.Installments = resultQuery.Installments.OrderBy(x => x.BuyDate).ToList();
 
             return resultQuery;
+        }
+
+        public async Task<List<DebtCategoryMatch>> FindSimilarCategorizedDebtsAsync(string name, Guid userId, int limit)
+        {
+            var connection = _context.Database.GetDbConnection();
+            var shouldCloseConnection = connection.State != ConnectionState.Open;
+            if (shouldCloseConnection)
+            {
+                await _context.Database.OpenConnectionAsync();
+            }
+
+            try
+            {
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = @"
+                        SELECT debt.""Name"",
+                               category.""Id"",
+                               category.""Name"",
+                               similarity(lower(debt.""Name""), @name)::double precision
+                        FROM ""Debt"" AS debt
+                        INNER JOIN ""DebtCategories"" AS category
+                            ON category.""Id"" = debt.""DebtCategoryId""
+                        WHERE debt.""UserId"" = @userId
+                          AND category.""UserId"" = @userId
+                          AND lower(debt.""Name"") % @name
+                        ORDER BY similarity(lower(debt.""Name""), @name) DESC
+                        LIMIT @limit";
+
+                    var currentTransaction = _context.Database.CurrentTransaction;
+                    if (currentTransaction != null)
+                    {
+                        command.Transaction = currentTransaction.GetDbTransaction();
+                    }
+
+                    AddParameter(command, "@name", name);
+                    AddParameter(command, "@userId", userId);
+                    AddParameter(command, "@limit", limit);
+
+                    var matches = new List<DebtCategoryMatch>();
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            matches.Add(new DebtCategoryMatch
+                            {
+                                DebtName = reader.GetString(0),
+                                CategoryId = reader.GetGuid(1),
+                                CategoryName = reader.GetString(2),
+                                Similarity = reader.GetDouble(3)
+                            });
+                        }
+                    }
+
+                    return matches;
+                }
+            }
+            finally
+            {
+                if (shouldCloseConnection)
+                {
+                    await _context.Database.CloseConnectionAsync();
+                }
+            }
+        }
+
+        private static void AddParameter(System.Data.Common.DbCommand command, string name, object value)
+        {
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = name;
+            parameter.Value = value;
+            command.Parameters.Add(parameter);
         }
 
         private static IQueryable<Debt> DebtsFilters(IQueryable<Debt> resultQuery,

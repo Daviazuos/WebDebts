@@ -10,6 +10,7 @@ namespace MicroServices.WebDebts.Domain.Interfaces.Repository
     public interface IDebtRepository : IBaseRepository<Debt>
     {
         Task<Debt> GetAllByIdAsync(Guid Id);
+        Task<List<DebtCategoryMatch>> FindSimilarCategorizedDebtsAsync(string name, Guid userId, int limit);
         Task DeleteDebt(Guid Id);
         Task<PaginatedList<Debt>> FindDebtAsync(int pageNumber, int pageSize, string name, decimal? value, DateTime? startDate, DateTime? finishDate, DebtInstallmentType? debtInstallmentType, DebtType? debtType, string category, Guid userId, bool? isGoal);
         Task<PaginatedList<Installments>> FilterInstallmentsAsync(int pageNumber, int pageSize, Guid? debtId, Guid? cardId, int? month, int? year, DebtInstallmentType? debtInstallmentType, Status? status, DebtType? debtType, Guid userId, bool? isGoal, DateTime? startDate, DateTime? endDate, Boolean? buyDate = true);

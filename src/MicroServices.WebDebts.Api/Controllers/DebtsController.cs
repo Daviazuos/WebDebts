@@ -153,6 +153,23 @@ namespace MicroServices.WebDebts.Api.Controllers
             return new OkObjectResult(response);
         }
 
+        [HttpGet, Route("SuggestCategory")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<ActionResult<SuggestDebtCategoryResponse>> SuggestCategory([FromQuery] string name)
+        {
+            var userId = Guid.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Sid));
+            var suggestion = await _debtsApplicationService.SuggestCategory(name, userId);
+
+            if (suggestion == null)
+            {
+                return NoContent();
+            }
+
+            return Ok(suggestion);
+        }
+
         [HttpGet, Route("GetDebtCategories")]
         [Authorize]
         [Consumes(MediaTypeNames.Application.Json)]
