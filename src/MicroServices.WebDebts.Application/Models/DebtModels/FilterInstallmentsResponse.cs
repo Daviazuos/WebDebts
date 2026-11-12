@@ -8,6 +8,7 @@ namespace MicroServices.WebDebts.Application.Models
         public Guid Id { get; set; }
         public string? DebtName { get; set; }
         public DateTime Date { get; set; }
+        public DateTime InstallmentDate { get; set; }
         public DateTime? PaymentDate { get; set; }
         public int InstallmentNumber { get; set; }
         public int NumberOfInstallments { get; set; }

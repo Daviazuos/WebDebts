@@ -248,6 +248,7 @@ namespace MicroServices.WebDebts.Application.Services
             var installmentsApp = debts.Items.Select(x => new FilterInstallmentsResponse
             {
                 Date = (x.BuyDate == new DateTime()) ? x.Date : x.BuyDate,
+                InstallmentDate = x.Date,
                 DebtName = x.Debt?.Name,
                 Id = x.Id,
                 InstallmentNumber = x.InstallmentNumber,
