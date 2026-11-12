@@ -11,6 +11,7 @@ namespace MicroServices.WebDebts.Domain.Interfaces.Repository
         Task<Card> GetCardByName(string cardName, Guid userId);
         Task<Card> GetCardById(Guid id);
         Task<PaginatedList<Card>> FindCardValuesByIdAsync(int pageNumber, int pageSize, Guid? id, Guid userId, int? month, int? year, bool withNoDebts);
+        Task<PaginatedList<CardMonthlySummary>> GetMonthlyCardSummariesAsync(int pageNumber, int pageSize, int month, int year, Guid userId, bool withNoDebts, bool? isPaid);
         Task<List<Debt>> FilterCardsAsync(int? month, int? year);
     }
 }

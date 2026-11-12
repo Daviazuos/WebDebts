@@ -1,6 +1,8 @@
 ﻿using MicroServices.WebDebts.Application.Models;
+using MicroServices.WebDebts.Application.Models.CardModels;
 using MicroServices.WebDebts.Application.Models.DebtModels;
 using MicroServices.WebDebts.Application.Service;
+using MicroServices.WebDebts.Domain.Models.Commom;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -89,6 +91,34 @@ namespace MicroServices.WebDebts.Api.Controllers
             var card = await _cardsApplicationService.FilterCardsAsync(getCardByIdRequest.PageNumber, getCardByIdRequest.PageSize, getCardByIdRequest.Id, getCardByIdRequest.Month, getCardByIdRequest.Year, _userId, getCardByIdRequest.WithNoDebts);
 
             return new OkObjectResult(card);
+        }
+
+        [HttpGet, Route("MonthlySummary")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<PaginatedList<MonthlyCardSummaryResponse>>> GetMonthlyCardSummariesAsync([FromQuery] GetMonthlyCardSummariesRequest request)
+        {
+            if (request == null ||
+                request.Month < 1 || request.Month > 12 ||
+                request.Year < 1 ||
+                request.PageNumber < 1 ||
+                request.PageSize < 1 || request.PageSize > 100)
+            {
+                return BadRequest();
+            }
+
+            var userId = Guid.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Sid));
+            var response = await _cardsApplicationService.GetMonthlyCardSummariesAsync(
+                request.PageNumber,
+                request.PageSize,
+                request.Month,
+                request.Year,
+                userId,
+                request.WithNoDebts,
+                request.IsPaid);
+
+            return Ok(response);
         }
 
         [HttpPut, Route("PayCard")]

@@ -14,6 +14,7 @@ namespace MicroServices.WebDebts.Domain.Service
         Task<Debt> LinkCard(Debt debt, Guid Id);
         Task<Card> GetAllByIdAsync(Guid id);
         Task<PaginatedList<Card>> FilterCardsAsync(int pageNumber, int pageSize, Guid? id, int? month, int? year, Guid userId, bool withNoDebts);
+        Task<PaginatedList<CardMonthlySummary>> GetMonthlyCardSummariesAsync(int pageNumber, int pageSize, int month, int year, Guid userId, bool withNoDebts, bool? isPaid);
     }
     public class CardService : ICardService
     {
@@ -43,6 +44,11 @@ namespace MicroServices.WebDebts.Domain.Service
             var cards = await _cardRepository.FindCardValuesByIdAsync(pageNumber, pageSize, id, userId, month, year, withNoDebts);
 
             return cards;
+        }
+
+        public async Task<PaginatedList<CardMonthlySummary>> GetMonthlyCardSummariesAsync(int pageNumber, int pageSize, int month, int year, Guid userId, bool withNoDebts, bool? isPaid)
+        {
+            return await _cardRepository.GetMonthlyCardSummariesAsync(pageNumber, pageSize, month, year, userId, withNoDebts, isPaid);
         }
 
         public async Task<Debt> LinkCard(Debt debt, Guid Id)

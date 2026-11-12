@@ -1,4 +1,5 @@
 ﻿using MicroServices.WebDebts.Application.Models;
+using MicroServices.WebDebts.Application.Models.CardModels;
 using MicroServices.WebDebts.Application.Models.DebtModels;
 using MicroServices.WebDebts.Application.Models.Mappers;
 using MicroServices.WebDebts.Application.Services;
@@ -23,6 +24,7 @@ namespace MicroServices.WebDebts.Application.Service
         Task<GenericResponse> AddValuesCard(CreateDebtAppModel createDebtAppModel, Guid cardId, Guid userId);
         Task<GetCardsResponse> GetCardById(Guid id);
         Task<PaginatedList<GetCardsResponse>> FilterCardsAsync(int pageNumber, int pageSize, Guid? id, int? month, int? year, Guid userId, bool withNoDebts);
+        Task<PaginatedList<MonthlyCardSummaryResponse>> GetMonthlyCardSummariesAsync(int pageNumber, int pageSize, int month, int year, Guid userId, bool withNoDebts, bool? isPaid);
         Task DeleteCardAsync(Guid cardId);
         Task PayCardDebtsAsync(PayCardResponseModel payCardResponseModel, Guid userId);
         Task EditCardAsync(CardAppModel cardAppModel, Guid userId);
@@ -128,6 +130,28 @@ namespace MicroServices.WebDebts.Application.Service
                 Items = response,
                 TotalItems = card.TotalItems,
                 TotalPages = card.TotalPages
+            };
+        }
+
+        public async Task<PaginatedList<MonthlyCardSummaryResponse>> GetMonthlyCardSummariesAsync(int pageNumber, int pageSize, int month, int year, Guid userId, bool withNoDebts, bool? isPaid)
+        {
+            var summaries = await _cardService.GetMonthlyCardSummariesAsync(pageNumber, pageSize, month, year, userId, withNoDebts, isPaid);
+
+            return new PaginatedList<MonthlyCardSummaryResponse>
+            {
+                CurrentPage = summaries.CurrentPage,
+                TotalPages = summaries.TotalPages,
+                TotalItems = summaries.TotalItems,
+                Items = summaries.Items.Select(summary => new MonthlyCardSummaryResponse
+                {
+                    Id = summary.Id,
+                    Name = summary.Name,
+                    DueDate = summary.DueDate,
+                    ClosureDate = summary.ClosureDate,
+                    Color = summary.Color,
+                    TotalValue = summary.TotalValue,
+                    IsPaid = summary.IsPaid
+                }).ToList()
             };
         }
 
