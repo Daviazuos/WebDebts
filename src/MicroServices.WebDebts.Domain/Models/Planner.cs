@@ -25,6 +25,7 @@ namespace MicroServices.WebDebts.Domain.Models
     {
         public DebtCategory DebtCategory { get; set; }
         public decimal BudgetedValue { get; set; }
+        public decimal OriginalBudgetedValue { get; set; }
     }
 
     public enum Frequency

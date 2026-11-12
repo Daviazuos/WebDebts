@@ -299,6 +299,9 @@ namespace MicroServices.WebDebts.Infrastructure.Migrations
                     b.Property<decimal>("BudgetedValue")
                         .HasColumnType("numeric");
 
+                    b.Property<decimal>("OriginalBudgetedValue")
+                        .HasColumnType("numeric");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
 

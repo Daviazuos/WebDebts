@@ -92,6 +92,19 @@ namespace MicroServices.WebDebts.Api.Controllers
             return Ok(response);
         }
 
+        [HttpPut("category/{plannerCategoryId}/spent-budget")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AdjustPlannerCategoryBudgetForSpendingAsync(Guid plannerCategoryId, [FromBody] UpdatePlannerCategorySpentValueRequest request)
+        {
+            if (request == null || request.SpentValue < 0)
+                return BadRequest();
+
+            var response = await _plannerService.AdjustPlannerCategoryBudgetForSpendingAsync(plannerCategoryId, request.SpentValue);
+            return Ok(response);
+        }
+
         [HttpDelete("category/{plannerCategoryId}")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status204NoContent)]

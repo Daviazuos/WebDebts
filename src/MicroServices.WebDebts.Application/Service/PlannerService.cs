@@ -83,7 +83,8 @@ namespace MicroServices.WebDebts.Application.Service
                 var categoriesTasks = f.PlannerCategories.Select(async c => new PlannerCategories
                 {
                     DebtCategory = await _categoryRepository.FindByIdAsync(c.DebtCategoryId),
-                    BudgetedValue = c.BudgetedValue
+                    BudgetedValue = c.BudgetedValue,
+                    OriginalBudgetedValue = c.BudgetedValue
                 });
 
                 var categories = await Task.WhenAll(categoriesTasks);
@@ -109,7 +110,8 @@ namespace MicroServices.WebDebts.Application.Service
             var category = new PlannerCategories
             {
                 DebtCategory = debtCategory,
-                BudgetedValue = request.BudgetedValue
+                BudgetedValue = request.BudgetedValue,
+                OriginalBudgetedValue = request.BudgetedValue
             };
             
 
@@ -142,7 +144,8 @@ namespace MicroServices.WebDebts.Application.Service
                         Id = c.Id,
                         DebtCategoryId = c.DebtCategory?.Id ?? Guid.Empty,
                         DebtCategoryName = c.DebtCategory?.Name,
-                        BudgetedValue = c.BudgetedValue
+                        BudgetedValue = c.BudgetedValue,
+                        OriginalBudgetedValue = c.OriginalBudgetedValue
                     }).ToList()
                 }).OrderBy(x => x.FrequencyNumber).ToList()
             }).ToList();
@@ -150,12 +153,13 @@ namespace MicroServices.WebDebts.Application.Service
 
         public async Task<PlannerCategoryResponse> UpdatePlannerCategoryBudgetAsync(Guid plannerCategoryId, decimal budgetedValue)
         {
-            // Supondo que exista um método para buscar a PlannerCategory pelo ID
+            // Supondo que exista um mï¿½todo para buscar a PlannerCategory pelo ID
             var plannerCategory = await _plannerRepository.FindPlannerCategoryByIdAsync(plannerCategoryId);
             if (plannerCategory == null)
                 throw new Exception("PlannerCategory not found");
 
             plannerCategory.BudgetedValue = budgetedValue;
+            plannerCategory.OriginalBudgetedValue = budgetedValue;
             await _plannerRepository.UpdatePlannerCategoryAsync(plannerCategory);
 
             return new PlannerCategoryResponse
@@ -163,13 +167,40 @@ namespace MicroServices.WebDebts.Application.Service
                 Id = plannerCategory.Id,
                 DebtCategoryId = plannerCategory.DebtCategory?.Id ?? Guid.Empty,
                 DebtCategoryName = plannerCategory.DebtCategory?.Name,
-                BudgetedValue = plannerCategory.BudgetedValue
+                BudgetedValue = plannerCategory.BudgetedValue,
+                OriginalBudgetedValue = plannerCategory.OriginalBudgetedValue
+            };
+        }
+
+        public async Task<PlannerCategoryResponse> AdjustPlannerCategoryBudgetForSpendingAsync(Guid plannerCategoryId, decimal spentValue)
+        {
+            if (spentValue < 0)
+                throw new ArgumentOutOfRangeException(nameof(spentValue));
+
+            var plannerCategory = await _plannerRepository.FindPlannerCategoryByIdAsync(plannerCategoryId);
+            if (plannerCategory == null)
+                throw new Exception("PlannerCategory not found");
+
+            var adjustedBudget = Math.Max(plannerCategory.OriginalBudgetedValue, spentValue);
+            if (plannerCategory.BudgetedValue != adjustedBudget)
+            {
+                plannerCategory.BudgetedValue = adjustedBudget;
+                await _plannerRepository.UpdatePlannerCategoryAsync(plannerCategory);
+            }
+
+            return new PlannerCategoryResponse
+            {
+                Id = plannerCategory.Id,
+                DebtCategoryId = plannerCategory.DebtCategory?.Id ?? Guid.Empty,
+                DebtCategoryName = plannerCategory.DebtCategory?.Name,
+                BudgetedValue = plannerCategory.BudgetedValue,
+                OriginalBudgetedValue = plannerCategory.OriginalBudgetedValue
             };
         }
 
         public async Task DeletePlannerCategoryAsync(Guid plannerCategoryId)
         {
-            // Supondo que já exista o método no repositório
+            // Supondo que jï¿½ exista o mï¿½todo no repositï¿½rio
             await _plannerRepository.DeletePlannerCategoryAsync(plannerCategoryId);
         }
 
@@ -194,7 +225,8 @@ namespace MicroServices.WebDebts.Application.Service
                     Id = c.Id,
                     DebtCategoryId = c.DebtCategory?.Id ?? Guid.Empty,
                     DebtCategoryName = c.DebtCategory?.Name,
-                    BudgetedValue = c.BudgetedValue
+                    BudgetedValue = c.BudgetedValue,
+                    OriginalBudgetedValue = c.OriginalBudgetedValue
                 }).ToList()
             };
         }

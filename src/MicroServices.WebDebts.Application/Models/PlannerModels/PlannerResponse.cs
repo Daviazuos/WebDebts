@@ -28,5 +28,6 @@ namespace MicroServices.WebDebts.Application.Models.PlannerModels
         public Guid DebtCategoryId { get; set; }
         public string DebtCategoryName { get; set; }
         public decimal BudgetedValue { get; set; }
+        public decimal OriginalBudgetedValue { get; set; }
     }
 }

@@ -12,6 +12,7 @@ namespace MicroServices.WebDebts.Application.Service
         Task<PlannerFrequencyResponse> AddPlannerCategoriesAsync(Guid plannerFrequencyId, AddPlannerCategoriesRequest request);
         Task<List<PlannerResponse>> GetPlannersByUserAndMonthAsync(Guid userId, int month, int year);
         Task<PlannerCategoryResponse> UpdatePlannerCategoryBudgetAsync(Guid plannerCategoryId, decimal budgetedValue);
+        Task<PlannerCategoryResponse> AdjustPlannerCategoryBudgetForSpendingAsync(Guid plannerCategoryId, decimal spentValue);
         Task DeletePlannerCategoryAsync(Guid plannerCategoryId);
         Task<PlannerFrequencyResponse> UpdatePlannerFrequencyDatesAsync(Guid plannerFrequencyId, DateTime start, DateTime end);
         Task DeletePlannerFrequencyAsync(Guid plannerFrequencyId);
