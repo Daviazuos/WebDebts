@@ -1,5 +1,6 @@
 ﻿using MicroServices.WebDebts.Domain.Interfaces.Repository;
 using MicroServices.WebDebts.Domain.Models;
+using MicroServices.WebDebts.Domain.Models.Commom;
 using MicroServices.WebDebts.Domain.Models.Enum;
 using MicroServices.WebDebts.Infrastructure.Database.Postgres;
 using Microsoft.AspNetCore.Http;
@@ -84,9 +85,34 @@ namespace MicroServices.WebDebts.Infrastructure.Repositories
             return await _dbSet.Where(x => x.Id == id).Include(x => x.WalletInstallments).FirstOrDefaultAsync();
         }
 
-        public async Task<WalletInstallments> GetInstallmentById(Guid id)
+        public async Task<PaginatedList<WalletInstallments>> GetWalletInstallmentsAsync(Guid walletId, Guid userId, int pageNumber, int pageSize)
         {
-            return await _dbSetInstallment.FirstAsync(x => x.Id == id);
+            var query = _dbSetInstallment
+                .Where(installment => installment.Wallet.Id == walletId && installment.Wallet.User.Id == userId)
+                .OrderBy(installment => installment.Date)
+                .ThenBy(installment => installment.InstallmentNumber)
+                .ThenBy(installment => installment.Id);
+
+            var totalItems = await query.CountAsync();
+            var totalPages = Convert.ToInt32(totalItems / pageSize + (totalItems % pageSize > 0 ? 1 : 0));
+            var installments = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PaginatedList<WalletInstallments>
+            {
+                CurrentPage = pageNumber,
+                TotalPages = totalPages,
+                TotalItems = totalItems,
+                Items = installments
+            };
+        }
+
+        public async Task<WalletInstallments> GetInstallmentById(Guid id, Guid userId)
+        {
+            return await _dbSetInstallment
+                .FirstOrDefaultAsync(installment => installment.Id == id && installment.Wallet.User.Id == userId);
         }
 
         public async Task<List<Wallet>> GetWalletResposibleParty(Guid? responsiblePartyId, int month, int year, Guid userId)

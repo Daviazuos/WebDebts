@@ -8,6 +8,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MicroServices.WebDebts.Domain.Models.Enum;
+using MicroServices.WebDebts.Domain.Models.Commom;
 using MicroServices.WebDebts.Application.Models.WalletModels;
 using MicroServices.WebDebts.Domain.Models;
 
@@ -20,7 +21,8 @@ namespace MicroServices.WebDebts.Application.Service
         Task<GenericResponse> UpdateWallet(Guid id, CreateWalletAppModel walletAppModel);
         Task<IEnumerable<GetWalletByIdResponse>> GetWallets(WalletStatus? walletStatus, int month, int year, Guid userId);
         Task DeleteWallet(Guid id);
-        Task<GenericResponse> UpdateWalletInstallment(Guid id, WalletInstallmentAppModel walletInstallmentAppModel);
+        Task<GenericResponse> UpdateWalletInstallment(Guid id, WalletInstallmentAppModel walletInstallmentAppModel, Guid userId);
+        Task<PaginatedList<WalletInstallmentAppModel>> GetWalletInstallments(Guid walletId, int pageNumber, int pageSize, Guid userId);
         Task<List<GetWalletResponsiblePartiesResponse>> GetResponsiblePartiesWallets(Guid? responsiblePartyId, int month, int year, Guid userId);
     }
     public class WalletApplicationService : IWalletApplicationService
@@ -130,15 +132,39 @@ namespace MicroServices.WebDebts.Application.Service
             await _walletService.DeleteWalletAsync(id);
         }
 
-        public async Task<GenericResponse> UpdateWalletInstallment(Guid id, WalletInstallmentAppModel walletInstallmentAppModel)
+        public async Task<GenericResponse> UpdateWalletInstallment(Guid id, WalletInstallmentAppModel walletInstallmentAppModel, Guid userId)
         {
-            var walletInstallment = await _walletRepository.GetInstallmentById(id);
+            var walletInstallment = await _walletRepository.GetInstallmentById(id, userId);
+            if (walletInstallment == null)
+                return null;
 
-            walletInstallment.ReceivedStatus = (bool)walletInstallmentAppModel.ReceivedStatus;
+            if (walletInstallmentAppModel.Date.HasValue)
+                walletInstallment.Date = walletInstallmentAppModel.Date.Value;
+            if (walletInstallmentAppModel.InstallmentNumber.HasValue)
+                walletInstallment.InstallmentNumber = walletInstallmentAppModel.InstallmentNumber.Value;
+            if (walletInstallmentAppModel.Value.HasValue)
+                walletInstallment.Value = walletInstallmentAppModel.Value.Value;
+            if (walletInstallmentAppModel.ReceivedStatus.HasValue)
+                walletInstallment.ReceivedStatus = walletInstallmentAppModel.ReceivedStatus.Value;
+            if (walletInstallmentAppModel.Name != null)
+                walletInstallment.Name = walletInstallmentAppModel.Name;
 
             await _unitOfWork.CommitAsync();
 
             return new GenericResponse { Id = walletInstallment.Id };
+        }
+
+        public async Task<PaginatedList<WalletInstallmentAppModel>> GetWalletInstallments(Guid walletId, int pageNumber, int pageSize, Guid userId)
+        {
+            var installments = await _walletRepository.GetWalletInstallmentsAsync(walletId, userId, pageNumber, pageSize);
+
+            return new PaginatedList<WalletInstallmentAppModel>
+            {
+                CurrentPage = installments.CurrentPage,
+                TotalPages = installments.TotalPages,
+                TotalItems = installments.TotalItems,
+                Items = installments.Items.Select(installment => installment.ToAppModel()).ToList()
+            };
         }
 
         public async Task<List<GetWalletResponsiblePartiesResponse>> GetResponsiblePartiesWallets(Guid? responsiblePartyId, int month, int year, Guid userId)

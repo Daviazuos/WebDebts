@@ -1,4 +1,5 @@
 ﻿using MicroServices.WebDebts.Domain.Models;
+using MicroServices.WebDebts.Domain.Models.Commom;
 using MicroServices.WebDebts.Domain.Models.Enum;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,8 @@ namespace MicroServices.WebDebts.Domain.Interfaces.Repository
         Task<List<WalletInstallments>> GetWalletInstallmentByMonth(int? month, int? year, Guid userId);
         Task<List<WalletInstallments>> GetWalletInstallmentBySpecificMonth(int? month, int? year, Guid userId);
         Task<Wallet> GetWalletByIdAsync(Guid id);
-        Task<WalletInstallments> GetInstallmentById(Guid id);
+        Task<PaginatedList<WalletInstallments>> GetWalletInstallmentsAsync(Guid walletId, Guid userId, int pageNumber, int pageSize);
+        Task<WalletInstallments> GetInstallmentById(Guid id, Guid userId);
         Task<List<Wallet>> GetWalletResposibleParty(Guid? responsiblePartyId, int month, int year, Guid userId);
     }
 }

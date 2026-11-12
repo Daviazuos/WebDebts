@@ -3,6 +3,7 @@ using MicroServices.WebDebts.Application.Models.DebtModels;
 using MicroServices.WebDebts.Application.Models.WalletModels;
 using MicroServices.WebDebts.Application.Service;
 using MicroServices.WebDebts.Domain.Models.Enum;
+using MicroServices.WebDebts.Domain.Models.Commom;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -87,9 +88,32 @@ namespace MicroServices.WebDebts.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<GenericResponse>> UpdateWalletInstallmentAsync([FromQuery] Guid id, [FromBody] WalletInstallmentAppModel walletInstallmentAppModel)
         {
-            var walletId = await _walletApplicationService.UpdateWalletInstallment(id, walletInstallmentAppModel);
+            if (id == Guid.Empty || walletInstallmentAppModel == null)
+                return BadRequest();
 
-            return new OkObjectResult(walletId);
+            var userId = Guid.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Sid));
+            var response = await _walletApplicationService.UpdateWalletInstallment(id, walletInstallmentAppModel, userId);
+            if (response == null)
+                return NotFound();
+
+            return Ok(response);
+        }
+
+        [HttpGet, Route("GetWalletInstallments")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<PaginatedList<WalletInstallmentAppModel>>> GetWalletInstallmentsAsync(
+            [FromQuery] Guid walletId,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            if (walletId == Guid.Empty || pageNumber < 1 || pageSize < 1 || pageSize > 100)
+                return BadRequest();
+
+            var userId = Guid.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Sid));
+            var response = await _walletApplicationService.GetWalletInstallments(walletId, pageNumber, pageSize, userId);
+            return Ok(response);
         }
 
         [HttpDelete, Route("DeleteWallet")]
