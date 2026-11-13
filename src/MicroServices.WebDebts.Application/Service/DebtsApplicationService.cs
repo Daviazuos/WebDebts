@@ -350,6 +350,8 @@ namespace MicroServices.WebDebts.Application.Services
             public Guid Id { get; set; }
             public string Category { get; set; }
             public Decimal Value { get; set; }
+            public bool IsFixed { get; set; }
+            public bool IsSimple { get; set; }
 
         }
 
@@ -374,6 +376,8 @@ namespace MicroServices.WebDebts.Application.Services
                             Id = installment.Id,
                             Category = g.First().Debt.DebtCategory?.Name,
                             Value = installment.Value,
+                            IsFixed = installment.Debt.DebtInstallmentType == DebtInstallmentType.Fixed,
+                            IsSimple = installment.Debt.DebtInstallmentType == DebtInstallmentType.Simple,
                         }).ToList()
                     }).ToList();
 
